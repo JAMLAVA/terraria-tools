@@ -1,0 +1,766 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html{color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Terraria Boss Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,800&display=swap">
+<style>
+/* Layout: inventory-panel sections stacked down one column; potions as slot cards in an auto-fill grid. Single dark look (Terraria UI), chosen deliberately. */
+:root{
+  --bg:#0b1a10; --panel:#14301d; --panel-2:#1a3b24; --edge:#3d6e45; --slot:#0f2316; --well:#08140c;
+  --fg:#eaf6ec; --muted:#a6c4ac; --gold:#f5c542; --life:#ff5f6d; --combat:#ff7b72; --flask:#e0a96d; --utility:#6fb7ff; --mana:#5fa8ff; --leaf:#7bd88f;
+  --melee:#ff9b54; --ranged:#7bd88f; --magic:#c18cff; --summon:#5fd3e8;
+  --f-display:"Pixelify Sans","Courier New",monospace;
+  --f-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  background-image:radial-gradient(1200px 500px at 70% -10%,#24532f 0%,transparent 60%);}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:28px 64px;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;font-weight:400;letter-spacing:.01em}
+h1{font-size:clamp(40px,9vw,84px);line-height:1.05;color:var(--gold);text-shadow:3px 3px 0 #000}
+h2{font-size:24px;color:var(--fg);text-shadow:2px 2px 0 #000}
+h3{font-size:17px}
+p{margin:0}
+.lede{color:var(--muted);max-width:62ch;margin:12px auto 0}
+.hero{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;padding-block:12px 4px}
+.eyebrow{font-family:var(--f-display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--leaf)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.pill{font-size:12px;font-weight:800;padding:3px 9px;border-radius:3px;border:1px solid currentColor;letter-spacing:.03em;white-space:nowrap}
+.panel{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:2px solid var(--edge);border-radius:6px;
+  box-shadow:0 0 0 2px #000, inset 0 0 0 1px #ffffff10;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.panel-head p{color:var(--muted);font-size:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.slot{background:var(--slot);border:2px solid var(--edge);border-radius:4px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0;transition:opacity .3s ease,border-color .25s ease}
+.slot.flask{background:linear-gradient(180deg,#e0a96d14,transparent 60%),var(--slot);border-color:#8a6a45}
+.slot.dim{opacity:.22}
+.slot.hit{border-color:var(--gold)}
+.slot-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.effect{color:var(--muted);font-size:13.5px}
+.recipe{display:flex;flex-wrap:wrap;gap:5px}
+.ing{font-size:12.5px;background:#ffffff0d;border:1px solid #ffffff22;color:var(--fg);padding:2px 7px;border-radius:3px;cursor:pointer;font-family:inherit;line-height:1.5}
+button.ing:hover,button.ing:focus-visible{border-color:var(--gold);outline:none}
+.ing.on{background:var(--gold);color:#1a1300;border-color:var(--gold)}
+.ing b{color:var(--gold);font-weight:800}
+.ing.on b{color:#1a1300}
+.station{font-size:12px;color:var(--muted)}
+.note{font-size:12.5px;color:var(--leaf)}
+.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.list li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.dot{width:12px;height:12px;margin-top:5px;border:2px solid #000;border-radius:2px}
+.list strong{font-weight:800}
+.list span.d{color:var(--muted);font-size:14px;display:block}
+.callout{border-left:4px solid var(--gold);background:#f5c54212;padding:10px 14px;border-radius:0 4px 4px 0;font-size:14px}
+.callout strong{color:var(--gold)}
+.subhead{display:flex;align-items:center;gap:10px}
+.filterbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px;color:var(--muted)}
+.filterbar button{font-family:var(--f-display);font-size:14px;background:var(--slot);color:var(--fg);border:2px solid var(--edge);border-radius:3px;padding:3px 10px;cursor:pointer}
+.filterbar button:focus-visible{outline:2px solid var(--gold)}
+.qgrid{display:grid;gap:6px 14px;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);grid-template-columns:repeat(var(--qcols,4),minmax(0,1fr));grid-template-rows:repeat(var(--qrows,8),auto)}
+.qrow{display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--slot);border:1px solid #ffffff18;border-radius:4px;padding:5px 6px 5px 10px;min-width:0}
+.qrow label{font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qwrap{position:relative;display:inline-flex;align-items:center;flex:none}
+.qwrap .qin{padding-right:22px}
+.qbtns{position:absolute;right:3px;top:2px;bottom:2px;display:flex;flex-direction:column;justify-content:center}
+.qwrap .qbtns button{transition:color .15s ease;background:transparent;border:0;border-radius:0;font:inherit;padding:0 3px;margin:0;height:50%;display:grid;place-items:center;color:var(--muted);cursor:pointer;line-height:0}
+.qwrap .qbtns button:hover,.qwrap .qbtns button:focus-visible{color:var(--gold);outline:none}
+.qbtns svg{width:9px;height:6px;fill:currentColor}
+.qin::-webkit-inner-spin-button,.qin::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.qin{-moz-appearance:textfield;appearance:textfield}
+.qin{width:54px;font:inherit;font-variant-numeric:tabular-nums;font-weight:800;text-align:right;background:var(--bg);color:var(--gold);border:2px solid var(--edge);border-radius:3px;padding:2px 6px}
+.qin:focus-visible{outline:none;border-color:var(--gold)}
+.qtools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13.5px;color:var(--muted)}
+.qtools button{font-family:var(--f-display);font-size:14px;background:var(--slot);color:var(--fg);border:2px solid var(--edge);border-radius:3px;padding:3px 10px;cursor:pointer}
+.qtools button:focus-visible{outline:2px solid var(--gold)}
+[hidden]{display:none!important}
+.slot-top{flex-wrap:wrap}
+.slot-top .titlerow{flex:1 1 150px}
+.slot-top h3{min-width:0;line-height:1.3}
+.slot-top .pill{flex:none}
+.slot-top .pills{flex:1 0 100%;justify-content:flex-start;row-gap:4px}
+html,body{overflow-x:clip}
+[data-tip]{position:relative}
+[data-tip]::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 6px);width:max-content;max-width:260px;background:var(--well);color:var(--fg);border:2px solid var(--gold);box-shadow:0 0 0 2px #000;padding:6px 9px;border-radius:4px;font:600 12.5px/1.4 var(--f-body);letter-spacing:0;text-transform:none;white-space:normal;text-align:left;z-index:30;pointer-events:none;opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .2s ease,transform .2s ease,visibility 0s linear .2s}
+[data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1;visibility:visible;transform:none;transition:opacity .2s ease .33s,transform .2s ease .33s,visibility 0s linear .33s}
+[data-tip].tip-right::after{left:auto;right:0}
+.panel{scroll-margin-top:var(--barh,120px)}
+.brow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.brow + .brow{border-top:1px solid #ffffff14;padding-top:7px}
+.jbtn{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-display);font-size:14.5px;color:var(--fg);background:transparent;border:1px solid transparent;border-radius:3px;padding:3px 9px 3px 5px;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,color .15s ease,opacity .2s ease}
+.jbtn:hover,.jbtn:focus-visible{background:var(--slot);border-color:var(--edge);color:var(--gold);outline:none}
+.jbtn.home{padding:3px 6px}
+.jbtn.home svg{width:18px;height:18px}
+.jsep{width:1px;height:18px;background:#ffffff22}
+.jbtn .ico{height:21px;width:auto;max-width:26px}
+@media (max-width:560px){.classbar .lbl{display:none}.cbtn{padding:1px 7px}.jbtn span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.jbtn{padding:4px 7px}}
+.panel-head h2{min-width:0;display:flex;line-height:1.2}
+.panel-head{align-items:center!important}
+.ptoggle{all:unset;display:inline-flex;align-items:center;gap:10px;cursor:pointer;border-radius:3px}
+.ptoggle:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.ptoggle .ico{height:30px;width:auto;max-width:34px}
+.chev{width:12px;height:8px;fill:var(--muted);transition:transform .42s cubic-bezier(.4,0,.2,1),fill .15s ease;margin-left:2px}
+.ptoggle:hover .chev{fill:var(--gold)}
+.panel.collapsed .chev{transform:rotate(-90deg)}
+.panel{transition:row-gap .42s cubic-bezier(.4,0,.2,1)}
+.panel.collapsed{gap:0}
+.panel-head p{transition:opacity .3s ease}
+.panel.collapsed .panel-head p{opacity:0}
+.panel.collapsed.cdone .panel-head p{display:none}
+.pbody{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:1fr;transition:grid-template-rows .45s cubic-bezier(.4,0,.2,1),opacity .35s ease .1s}
+.pinner{min-height:0;min-width:0;display:flex;flex-direction:column;gap:16px}
+.panel.collapsed .pbody{grid-template-rows:0fr;opacity:0;transition:grid-template-rows .45s cubic-bezier(.4,0,.2,1),opacity .25s ease}
+.panel.collapsed .pinner,.panel.animating .pinner{overflow:hidden}
+.fx{transition:opacity .2s ease,border-color .15s ease}
+.fade-out,.fade-in-start{opacity:0!important}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+tr.rowin{animation:fadein .4s ease}
+.ing,tr.row td,.qin{transition:background-color .15s ease,color .15s ease,border-color .15s ease}
+.qwrap .qbtns{opacity:.45;transition:opacity .2s ease}
+.qrow:hover .qbtns,.qtools .qwrap:hover .qbtns,.qwrap:focus-within .qbtns{opacity:1}
+.grid.fill{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.tiers{display:flex;flex-direction:column;gap:22px}
+.tier{display:flex;flex-direction:column;gap:12px}
+.tierhead{all:unset;display:flex;align-items:center;gap:12px;cursor:pointer;border-radius:4px;align-self:flex-start}
+.tierhead:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.tierhead h3{display:flex;align-items:center;gap:8px}
+.tierhead:hover .chev{fill:var(--gold)}
+.tier.collapsed .chev{transform:rotate(-90deg)}
+.tier{transition:row-gap .42s cubic-bezier(.4,0,.2,1)}
+.tier.collapsed{row-gap:0}
+.tbody{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:1fr;transition:grid-template-rows .45s cubic-bezier(.4,0,.2,1),opacity .35s ease .1s}
+.tinner{min-height:0;min-width:0}
+.tier.collapsed .tbody{grid-template-rows:0fr;opacity:0;transition:grid-template-rows .45s cubic-bezier(.4,0,.2,1),opacity .25s ease}
+.tier.collapsed .tinner,.tier.animating .tinner{overflow:hidden}
+.tierhead h3{font-size:19px}
+.tierhead p{color:var(--muted);font-size:13.5px}
+.tbadge{flex:none;width:40px;height:40px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:22px;color:#10140f;border-radius:4px;border:2px solid #000;box-shadow:inset 0 -3px 0 #00000040}
+.t-S{background:#ff6b5e}.t-A{background:#ff9f43}.t-B{background:#f5c542}.t-C{background:#9cc79f}.t-X{background:#c9a6ff}.t-U{background:var(--utility)}
+.qtier{flex:none;width:17px;height:17px;display:grid;place-items:center;margin-right:8px;border-radius:3px;font-family:var(--f-display);font-weight:700;font-size:11px;line-height:1;color:#10140f;opacity:.8}
+.t-F{background:#d9b8a0}
+.qgrid .qrow{border-left-width:3px}
+.qrow.q-S{border-left-color:#ff6b5e99}.qrow.q-A{border-left-color:#ff9f4399}.qrow.q-B{border-left-color:#f5c54299}.qrow.q-C{border-left-color:#9cc79f99}.qrow.q-U{border-left-color:#6fb7ff99}.qrow.q-F{border-left-color:#d9b8a099}
+.dur{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--muted);padding:2px 6px 2px 4px;border-radius:3px;background:#ffffff0d;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dur svg{width:11px;height:11px}
+.slot{position:relative}
+.dur.corner{position:absolute;top:9px;right:9px}
+.slot-top{padding-right:0}
+.slot-top .titlerow{padding-right:var(--durpad,44px)}
+#furnList .slot{--durpad:62px}
+.dur.corner{font-size:12px}
+.callout.core{display:flex;align-items:center;gap:12px}
+.coreicons{display:flex;gap:4px;flex:none}
+.coreicons .ico{width:28px!important;height:28px!important;object-fit:contain;margin:0!important}
+.furn .dur{margin-left:6px;vertical-align:1px}
+.planner{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.planner{grid-template-columns:1fr}}
+.picker{display:flex;flex-direction:column;gap:14px;min-width:0}
+.pgroup{display:flex;flex-direction:column;gap:7px}
+.pgroup h4{margin:0;font-family:var(--f-display);font-size:14px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:8px}
+.pgroup h4 .tbadge{width:20px;height:20px;font-size:12px;border-width:1px}
+.pchips{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{display:inline-flex;align-items:center;gap:6px;font:600 13px/1.2 var(--f-body);color:var(--fg);background:var(--slot);border:2px solid var(--edge);border-radius:4px;padding:4px 8px 4px 5px;cursor:pointer;transition:background-color .2s ease,border-color .2s ease,color .2s ease,opacity .25s ease}
+.pchip .ico{height:20px;width:auto;max-width:24px}
+.pchip small{font-size:11px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.pchip:hover{border-color:var(--gold)}
+.pchip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.pchip[aria-pressed="true"]{background:#f5c54226;border-color:var(--gold);color:#fff3cf}
+.pchip[aria-pressed="true"] small{color:var(--gold)}
+.ptools{display:flex;gap:8px;flex-wrap:wrap}
+.ptools button{font-family:var(--f-display);font-size:14px;background:var(--slot);color:var(--fg);border:2px solid var(--edge);border-radius:3px;padding:3px 10px;cursor:pointer;transition:border-color .15s ease,color .15s ease}
+.ptools button:hover,.ptools button:focus-visible{border-color:var(--gold);color:var(--gold);outline:none}
+.summary{position:sticky;top:calc(var(--barh,120px) - 6px);background:var(--well);border:2px solid var(--edge);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (max-width:820px){.summary{position:static}}
+.sum-time{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sum-time b{font-family:var(--f-display);font-size:42px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
+.sum-time span{color:var(--muted);font-size:14.5px}
+.sum-empty{color:var(--muted);font-size:15px}
+.sum-h{font-family:var(--f-display);font-size:14.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0}
+.stats{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.stats li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #ffffff10;font-size:15.5px;animation:fadein .35s ease}
+.stats li b{font-variant-numeric:tabular-nums;color:var(--leaf)}
+.stats li b.neg{color:var(--combat)}
+.others{margin:0;padding-left:18px;font-size:14.5px;color:var(--fg);display:flex;flex-direction:column;gap:3px}
+.others li{animation:fadein .35s ease}
+.timeline{display:flex;flex-direction:column;gap:5px}
+.tl{display:grid;grid-template-columns:minmax(0,9em) 1fr auto;gap:8px;align-items:center;font-size:13.5px}
+.tl span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.tl i{display:block;height:9px;border-radius:4px;background:var(--edge);overflow:hidden}
+.tl i em{display:block;height:100%;background:var(--leaf);border-radius:4px;transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.tl.min i em{background:var(--gold)}
+.tl b{font-variant-numeric:tabular-nums;font-size:13px}
+.pnote{font-size:12.5px;color:var(--muted);margin:0}
+.wl{color:inherit;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:2px;transition:color .15s ease}
+.wl:hover,.wl:focus-visible{color:var(--gold);text-decoration:underline;outline:none}
+#furnList .slot .get{margin-top:auto;padding-top:8px;border-top:1px solid #ffffff12}
+.station.get b{color:var(--fg);font-weight:700}
+.tiertools{display:flex;justify-content:flex-end;margin-bottom:-8px}
+.tiertools button{font-family:var(--f-display);font-size:14px;background:var(--slot);color:var(--fg);border:2px solid var(--edge);border-radius:3px;padding:3px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:border-color .15s ease,color .15s ease}
+.tiertools button:hover,.tiertools button:focus-visible{border-color:var(--gold);color:var(--gold);outline:none}
+.tiertools .chev{transition:transform .3s ease}
+.tiertools button[data-mode="expand"] .chev{transform:rotate(-90deg)}
+.ico{image-rendering:pixelated;image-rendering:crisp-edges;object-fit:contain;flex:none;display:inline-block;vertical-align:middle}
+.ibox{width:44px;height:44px;flex:none;display:grid;place-items:center;background:var(--well);border:2px solid var(--edge);border-radius:4px}
+.ibox .ico{max-width:38px;max-height:38px;width:auto;height:auto}
+.ibox.sm{width:34px;height:34px}
+.ibox.sm .ico{max-width:28px;max-height:28px}
+.titlerow{display:flex;align-items:center;gap:10px;min-width:0}
+.ing .ico{width:auto;height:16px;margin-right:4px}
+.qrow .ico{height:20px;width:auto;margin-right:6px}
+.qrow label{display:flex;align-items:center}
+.cellname{display:flex;align-items:center;gap:10px}
+.callout .ico{height:22px;width:auto;margin-right:6px}
+.tablewrap{overflow-x:auto;border:2px solid var(--edge);border-radius:4px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid #ffffff14;vertical-align:middle}
+th{font-family:var(--f-display);font-weight:500;font-size:14px;color:var(--gold);background:var(--slot);position:sticky;top:0}
+td.n{font-variant-numeric:tabular-nums;font-weight:800;color:var(--gold);text-align:right;width:60px}
+td .cat{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+tr.row{cursor:pointer}
+tr.row:hover td{background:#ffffff08}
+tr.row.on td{background:#f5c5421f}
+.classbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:5;align-self:center;width:fit-content;max-width:100%;display:flex;flex-direction:column;gap:7px;padding:9px 14px;background:#0b1a10d0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:2px solid var(--edge);border-radius:8px;box-shadow:0 0 0 2px #000,0 8px 24px #00000066}
+.classbar .lbl{font-family:var(--f-display);font-size:14.5px;color:var(--muted);margin-right:4px}
+.cbtn{--c:var(--gold);font-family:var(--f-display);font-size:14.5px;font-weight:500;background:var(--slot);color:var(--c);border:2px solid var(--c);border-radius:3px;padding:2px 11px;cursor:pointer;transition:background .12s,color .12s}
+.cbtn:hover{background:#ffffff10}
+.cbtn:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.cbtn[aria-pressed="true"]{background:var(--c);color:var(--bg)}
+.furn{display:grid;gap:12px 20px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));list-style:none;margin:0;padding:0}
+.furn li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.furn strong{font-weight:800}
+.furn span.d{color:var(--muted);font-size:14px;display:block}
+.tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-left:6px}
+.pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+footer{color:var(--muted);font-size:12.5px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <h1>Terraria Boss Prep</h1>
+    <p class="lede">Everything that raises your effective HP before a fight: potions, flasks, food, and arena elements. Pick your class to see only what helps you, and click any ingredient to see every potion that uses it.</p>
+  </header>
+
+  <div class="classbar" id="topbar">
+  <nav class="brow" aria-label="Jump to section" id="jumpbar"></nav>
+  <nav class="brow" aria-label="Filter by class">
+    <span class="lbl">Class:</span>
+    <button type="button" class="cbtn" data-cls="all" aria-pressed="true" style="--c:var(--gold)">All</button>
+    <button type="button" class="cbtn" data-cls="melee" aria-pressed="false" style="--c:var(--melee)">Melee</button>
+    <button type="button" class="cbtn" data-cls="ranged" aria-pressed="false" style="--c:var(--ranged)">Ranged</button>
+    <button type="button" class="cbtn" data-cls="magic" aria-pressed="false" style="--c:var(--magic)">Magic</button>
+    <button type="button" class="cbtn" data-cls="summon" aria-pressed="false" style="--c:var(--summon)">Summoner</button>
+  </nav>
+  </div>
+
+  <section class="panel" aria-labelledby="pots" data-sec="pots">
+    <div class="panel-head"><h2 id="pots">Potions &amp; Flasks</h2><p>Potions: Placed Bottle or Alchemy Table (the table saves ingredients 33% of the time).<br>Flasks: Imbuing Station.</p></div>
+    <div class="callout"><img class="ico" data-icon="Bottled Water" alt=""><strong>Every potion and flask also takes 1 Bottled Water.</strong> It isn't listed in the recipes below. Fill Glass Bottles at any water source or a Sink, and bring one per potion you plan to brew.</div>
+    <div class="filterbar" id="filterbar" hidden><span>Showing potions that use <strong id="filterName" style="color:var(--gold)"></strong></span><button type="button" id="clearFilter">Clear</button></div>
+    <div class="tiertools"><button type="button" id="tierAll" data-mode="collapse"></button></div>
+    <div class="tiers" id="tierWrap"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="food" data-sec="food">
+    <div class="panel-head"><h2 id="food">Food</h2><p>Only one Well Fed tier is active at a time.</p></div>
+    <div class="grid">
+      <div class="slot" style="border-color:var(--gold)"><span class="dur corner"><svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 3v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>48m</span>
+        <div class="slot-top"><div class="titlerow"><span class="ibox"><img class="ico" data-icon="Golden Delight" alt=""></span><h3><a class="wl" href="https://terraria.wiki.gg/wiki/Golden_Delight" target="_blank" rel="noopener">Golden Delight</a></h3></div><span class="pills"><span class="pill" style="color:var(--gold)">Best</span></span></div>
+        <p class="effect">Exquisitely Stuffed: +4 defense, +10% damage, +4% crit, +10% melee speed, +40% move speed.</p>
+        <div class="recipe"><span class="ing" style="cursor:default"><img class="ico" data-icon="Gold Bunny" alt=""><img class="ico" data-icon="Golden Carp" alt=""><b>1×</b> any gold critter or Golden Carp</span></div>
+        <p class="station">Cooking Pot or Cauldron. Catch gold critters with a Bug Net.</p>
+      </div>
+      <div class="slot"><span class="dur corner"><svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 3v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>14m</span>
+        <div class="slot-top"><div class="titlerow"><span class="ibox"><img class="ico" data-icon="Seafood Dinner" alt=""></span><h3><a class="wl" href="https://terraria.wiki.gg/wiki/Seafood_Dinner" target="_blank" rel="noopener">Seafood Dinner</a></h3></div><span class="pills"><span class="pill" style="color:var(--muted)">Easy backup</span></span></div>
+        <p class="effect">Plenty Satisfied: +3 defense, +7.5% damage, +3% crit, +7.5% melee speed, +30% move speed.</p>
+        <div class="recipe"><span class="ing" style="cursor:default"><img class="ico" data-icon="Armored Cavefish" alt=""><b>2×</b> any one fish</span></div>
+        <p class="station">Cooking Pot or Cauldron. Bass, Trout and other common fish don't work.</p>
+      </div>
+      <div class="slot" style="--durpad:84px"><span class="dur corner"><svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 3v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>10m / 8m</span>
+        <div class="slot-top"><div class="titlerow"><span class="ibox"><img class="ico" data-icon="Pho" alt=""></span><h3><a class="wl" href="https://terraria.wiki.gg/wiki/Pho" target="_blank" rel="noopener">Pho</a> or <a class="wl" href="https://terraria.wiki.gg/wiki/Pad_Thai" target="_blank" rel="noopener">Pad Thai</a></h3></div><span class="pills"><span class="pill" style="color:var(--muted)">No crafting</span></span></div>
+        <p class="effect">Plenty Satisfied, same stats as Seafood Dinner. Pho lasts 10m, Pad Thai 8m.</p>
+        <div class="recipe"><span class="ing" style="cursor:default"><img class="ico" data-icon="Pho" alt=""><img class="ico" data-icon="Pad Thai" alt="">Buy from the Traveling Merchant</span></div>
+        <p class="station">Pho 75 silver, Pad Thai 55 silver.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="furn" data-sec="furn">
+    <div class="panel-head"><h2 id="furn">Arena Elements</h2><p>Furniture and passive buffs to set up in the arena before you summon.</p></div>
+    <div class="callout core"><span class="coreicons"><img class="ico" data-icon="Campfire" alt=""><img class="ico" data-icon="Heart Lantern" alt=""><img class="ico" data-icon="Bast Statue" alt=""></span><span><strong>Core three:</strong> Campfire + Heart Lantern + Bast Statue. The Campfire and Heart Lantern add about <strong>+1.5 HP/s</strong> regen and multiply healing by <strong>1.1×</strong>, and the Bast Statue adds <strong>+5 defense</strong>.</span></div>
+    <div class="grid fill" id="furnList"></div>
+    <div class="callout"><img class="ico" data-icon="Heart Statue" alt=""><strong>Heart statues:</strong> place as many as you can and wire them to a <strong>1/4 or 1/8 second timer</strong>.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="ings" data-sec="ings">
+    <div class="panel-head"><h2 id="ings">Ingredient Shopping List</h2><p id="ingNote"></p></div>
+    <div class="qtools"><label for="setAll">Set every potion to</label><span class="qwrap"><input class="qin" id="setAll" type="number" min="0" max="999" value="1" inputmode="numeric"><span class="qbtns"><button type="button" data-step="1" aria-label="Increase" tabindex="-1"><svg viewBox="0 0 10 6"><path d="M5 0l5 6H0z"/></svg></button><button type="button" data-step="-1" aria-label="Decrease" tabindex="-1"><svg viewBox="0 0 10 6"><path d="M0 0h10L5 6z"/></svg></button></span></span><button type="button" id="applyAll">Apply</button><button type="button" id="zeroAll">Clear all</button></div>
+    <div class="qgrid" id="qgrid"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Ingredient</th><th>Where to get it</th><th style="text-align:right">Need</th></tr></thead>
+      <tbody id="ingBody"></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="plan" data-sec="plan">
+    <div class="panel-head"><h2 id="plan">Buff Calculator</h2><p>Pick everything you'll use. Totals and run time update as you go.</p></div>
+    <div class="planner">
+      <div class="picker" id="picker"></div>
+      <aside class="summary" id="summary" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <footer>Recipes and item icons from the official Terraria Wiki (terraria.wiki.gg). Terraria sprites © Re-Logic.</footer>
+</div>
+
+<script>
+const ICONS = {"Battle Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAAAdFSwtIUQxMTtEMmRRPHhSU2FrS6V/YLh5e46ljtCZnLS6vdrOt/ri5f9DpmNwAAAAAXRSTlMAQObYZgAAAG1JREFUeNplzEsVgDAMBdFYiIVYiIVYwEIsPAuxgIVawEItYAENlAP0O6u7GqKSO/01ej58pV5ZV5JWdfSjHSo1X3nXmaTu9dtoKclCQQrITDsDwRPlBPPrns9JMLKsbNssijuyIQEBG0j8RR1vWOk+9dWtLfkAAAAASUVORK5CYII=","Warmth Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAMAAAAbzM5ZAAAAOVBMVEUAAACsTwD/+bZ/OgD/9Hb//vT/1wD4uAD/kAD/cwDvlwD/VAD/MwB5e47i5f+6vdqZnLRSU2ExMTuExcR3AAAAAXRSTlMAQObYZgAAAH5JREFUeNp9zjEOAjEQA8DZhKOH/78RanQki9gOicSdx40D4IYnIFZYNIUo3uPdW+ge7LGYInu8SYSnPd4NKUyHxw6LE1G0xkA4kE7kAsPV1CSaKbyXeNGqwhDmEr8c6JpTGgvsQqshMbaYdSrQhXODXUocpnTxWiDdb8Z//AA541JDHbbFIAAAAABJRU5ErkJggg==","Rotten Chunk":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWBAMAAAA2mnEIAAAALVBMVEUAAADh4ODJwMCuxCWnui6SdnlygwhpZWV0XmFgbwVeTE5LVwRAPj43QAQxJifasUuCAAAAAXRSTlMAQObYZgAAAGJJREFUeNp1xkEVACEIBcBfwQpWsIIVrGAFKlCBClSwAhWoQIZ9uid8u3MaAESEV7qV8nPDx6nW4h4R10FWyxLVSN+syhyscd2ndBmD03fb3NV8720tHqzX4a6qp/lAHEh/AND4X6H6MYchAAAAAElFTkSuQmCC","Vertebra":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAYBAMAAAAWrPD2AAAAElBMVEUAAABiFxfbwLnGinudKSm+WlptjNfsAAAAAXRSTlMAQObYZgAAAF1JREFUeNp1zlENwEAIA9BaqAUsYKEW8G9lQLbk2Bg/zUtIAegRzhmS6Vc07hLo5rybhmQJJrtpKDOygxbecQqMrk92DNWuJHdiUSivKzbVY2b+/P1SHvbYBdbgowvRpxpvyzLrygAAAABJRU5ErkJggg==","Frost Minnow":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAG1BMVEUAAAArQWd3u9nL9fev2NoCHk7o/v9imrNUY4D6XjbTAAAAAXRSTlMAQObYZgAAAIxJREFUeNp90W0NxDAIBmAsYOG1gAUsYAELWKjsQe922W6w/miTJyV8EV0O16FBmC0vCwhmcRgjlkNHIZaKWCtehBjiglD0kqnNCkT1E9SII06A9ZKpf7AmyR7lCxiFrAAJMUhWiIJ8JbgVrjFgjzxrbYVdLsXvLw+ptamcG6Bedqf3bXfif9AIPeAuB1fARRHghnRgAAAAAElFTkSuQmCC","Rotten Chunk or Vertebra":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWBAMAAAA2mnEIAAAALVBMVEUAAADh4ODJwMCuxCWnui6SdnlygwhpZWV0XmFgbwVeTE5LVwRAPj43QAQxJifasUuCAAAAAXRSTlMAQObYZgAAAGJJREFUeNp1xkEVACEIBcBfwQpWsIIVrGAFKlCBClSwAhWoQIZ9uid8u3MaAESEV7qV8nPDx6nW4h4R10FWyxLVSN+syhyscd2ndBmD03fb3NV8720tHqzX4a6qp/lAHEh/AND4X6H6MYchAAAAAElFTkSuQmCC","The Plan":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeBAMAAADJHrORAAAAGFBMVEUAAADq8/bJ1Nqktr5ibnlHTlylGxssMTtNMTBbAAAAAXRSTlMAQObYZgAAAG5JREFUeNp9x1ENwwAMA9FQMAVTCAVTCIVQMP1pW6tWqtW7r1dVcyRJVcEkAYAEFVyjo0a0ZMttm9n9j+xktQ2bBlXJ4C+gJ5ogudhsNXcBLDgVPFxgv9MvhtnJQ2AXtunx0+JZj5L7Krl8qx7+AMhHXRtRKn71AAAAAElFTkSuQmCC","Pho":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAcCAMAAABBJv+bAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAA8UExURQAAABwwPXeFjuzr+XxqVdi9nfro3Fl1Ib7iQYCXKy1CB9ttRHk5Ke+1h6BTP0wrGOWBUqGpsL7HzkBRXN8aiKYAAAABdFJOUwBA5thmAAAApElEQVR42o3P7QqCQBCF4XctKBTU8P4vMdTwV6bTHBaWAsGZ4Ywfz6Bs4qBadhZUKc4FDWPRUpiHwisVljvANbDR8AJa3hhXT8WH5ZRr8kd2DHWDnpQZAgyG5amjeN89F8/zlAcmbmxUmGclleU+wAk1nlKZ1QHumQ+YEAsezJjPXCM9mgYhzj/oMJ/QkZiwIKMFvRT/YoTLRSuaIwij/H+bKcZfH8OITRerCVcAAAAASUVORK5CYII=","Pad Thai":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAWCAYAAADXYyzPAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGwSURBVEhLY2SgMlgQbP8fRN989grMbz9+HasdTFCa7oBqPob51D/JA8zvalkEpmE+Rg+JAfMx1S3+duY0GF/+9B6MQT4FYVBIwEIDBAZ/HFdaaoLjCAZgcQcTz/HQBFEM6auOgekQDXUw7aonDKan7LgOpmH6Bp+PC8zVUXzYWw3xAZOuAZjenLcSTMPArHsfoSwIgPl4zY2bYHrL1Rcodg0eH8N8WuqlDeZ/tvEG0ywTG8G0YgrExzCfP1t0BUxLGP4B0/6Vp8A0DKD7FAYG3scyBrZgn4awQ0qWHPHvYJrT2ARMd2+7CqZh4ug+/3f5Api2X74TTDd1WoHpunJIKn9w3QxMP7lwGGznwPkY5tPo0ECwgPWJmWAaBvZBAoBgnKP79NBWiMY9h+6AaWuddjC9ta0YTA+Yj1mgNIOWihKYlvTfBqYVxWXA9D4fPTD9/ewZMM0LJoFx/pITTJeehxsBBug+7a++BqavXb0Mppeq2oDpwZOqVRTlwfzEiBAw7e3kCaZJBVv3bQfT81esAdN37j8E0wOfqqE0BnAIjEEpq8kFB9YvwWrHAPmYgQEABFOZqPg5i9cAAAAASUVORK5CYII=","Flask of Cursed Flames":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAeCAMAAAAfOR5kAAAAP1BMVEUAAAAJFT1N4y1aTDJANSLa/Qno/7e5pX8yMjIPQWQVbYqGckqSdnkcqqNg+AIcc3056LhCNTd0XmEUFBQcsKnLMSaIAAAAAXRSTlMAQObYZgAAAJNJREFUeNqFzUFuwkAMQNE3TUqaKiy4/yHbgAQBJhqQF7CK2djy+wsXoMMqJigJd3o1uLeqKfe6QLxCzr2rphjUjzwodk72bppryhzcnR0cDb79kTI/uNlhATmPBrNJdSHnwH+w92VOuZhej5piNG/yExWLZsXkEmGbR4suEKa4tpgI3njXEhaBX9U5UMbvhcY2PwBDyGRPd1Vi/AAAAABJRU5ErkJggg==","Cursed Flame":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAYAAAAmlE46AAAARElEQVR42mPABcxPSP0HYVzylGrE1JDwgwmMYfyhrxFTw+Y/DCCMYQDZGglquPWXE4RxGjBkNGL6FZdGDA0kaxy4lAMAHyo/sB2NWicAAAAASUVORK5CYII=","Endurance Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAADx9eTi5f+6vdq4urKZnLScnZl/f395e45jY2NSU2FKSko/PjoxMTsyMjJBgt3VAAAAAXRSTlMAQObYZgAAAG5JREFUeNplxkERwCAMRFEsYKEWsIAFLMTCWqiFtRALawELsYCGTmc4NPQf/rzy5v7+oLfhf8bVInF7K9HH8B+jXe2Okwz30EGhS6ASxUqggyuxclK0mtlBaRoSl2FS4sFOaMKYqW4GgxLL2pUPH4nqfz3UkCX0AAAAAElFTkSuQmCC","Featherfall Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAADi5f+S5f+6vdpf2P+ZnLQiwvYKsOZ5e44Qf6RSU2ENaokLV3ExMTsHOkzap98oAAAAAXRSTlMAQObYZgAAAGtJREFUeNply0ERwDAIRNFYqIVYiAUsxEIsrIVaiAUsYAELWEBDh5keAvmHnXfZFjHHFvKYfNOeYZXhUCXPyRdtPOO1zDBzqFCI9KKCsLVSOvbyQu1wD2eSxjVTQbK3LPhJFxCwIInN/9rBD3a7Z7tmEx48AAAAAElFTkSuQmCC","Heartreach Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAABbCGqSDo8NAi0xMTtSU2HhFpy4CYNDBVD6QLy6vdqZnLT+od7i5f95e478egMvAAAAAXRSTlMAQObYZgAAAHFJREFUeNplzFsRwCAMRNFYiIVYwEIsxAIWYgELWMACFrCAhWpoZsojlDv7cb4WwBKB2aaUKje5F74JvOQodT8scunl4T+BRdbvJKISKaaDqLlFtSXPlBtSRNJwMGa0KB6EZE+fPCFQHvI0T3lCWBp8Ad/nPCv3HPusAAAAAElFTkSuQmCC","Dangersense Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAAAuCwPcSQS3QRBTFAYxMTtSU2H7aR2MIQr/ll+6vdqZnLTi5f95e47/xKMg41NxAAAAAXRSTlMAQObYZgAAAHFJREFUeNplzFENwDAIRVEs1MKzgIVawAIWsIAFLNTCLMzCLEzDmiVjrLtfJ4E8opkqPb3Usemfsg/5kyRVqNu7kJSxj0NWkqjmbrKDGX1hhwXb7Uo72WErA2we7cOOYHcHt8o27+Fu+BJhgN0PhVnhBdM4QRUs/G2xAAAAAElFTkSuQmCC","Inferno Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAYAAAAsEj5rAAABBElEQVR42sXUsQ7BQBzH8f+bSMRikXQiMXgHbCajwQOIWWxNSAwSm8ViMxFsbBKDgbHiOU569/819RepuLu45JvItf2EuyuijFFvtFU6sh3OQADr7U03na10P8POwSCoqrjooXSAMf9/UMLWkHMQi4/NcLbL1iB+GjZBbkqvH+q+XgLnoITlq2d9Dn8GF0VS6aKKaVN6DfPyfn+gBNR5Zxp1dZhPrnfKJnE9gZ2D4wKpOBVddcmDE+7CHbkhB5if6+dI5xHcz01NMgG6iwAPuJrJHzjMk4p7A0/cJ3DJeQfx4e14hBxgQJjnL3AISOcPxJBwciyw+C0uC/IGSvjbMv/GbMEnOmKQCgvM5WkAAAAASUVORK5CYII=","Gills Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAeCAMAAAAvtQ9FAAAAOVBMVEUAAAADHDcHL1sxMTsJPHIqNkENSokQWaRSU2EKd+ZecIF5e46ZnLSRqsCuw9e6vdqezv/G4//i5f/LpLilAAAAAXRSTlMAQObYZgAAAGVJREFUeNp1zsEKAjEMANEnrXTx/39UEKx2Y714WLYxtzDMJBU2dFSHqWyasOkLGW54Jk64I9Jaxb7UiqYIUzmR8HDFEEutqaZIyFvT0w/8PlvJx8RMnZdL6sxz+rCE8scZxnrnCwLNIUa9ThZlAAAAAElFTkSuQmCC","Regeneration Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAeCAMAAAAvtQ9FAAAAOVBMVEUAAAA4Ax5cBjJzCEAxMTsqNkGuDWFSU2HbEX1ecIF5e47/OKKZnLSRqsCuw9e6vdr/nNH/xeTi5f9VbzKzAAAAAXRSTlMAQObYZgAAAGNJREFUeNp1zsEKwyAQANFHXYn//6mFQhO19lbSaPa2DDO7ARt2hNMEm6Jjn0iX8F44zRNtWcuoUy0USfcRF9K8JHRtqmXZWH5wKA59QaCelx8ZBsbSqR43ziX95+Qbp6rznS8u1SA94HxfWwAAAABJRU5ErkJggg==","Lifeforce Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAMFBMVEUAAAAzAwCICQCpCwAxMTtSU2HRDwDvEQCgkaO6vdqZnLSGu9nh/Pzi5f9OBQB5e44m5WyFAAAAAXRSTlMAQObYZgAAAHFJREFUeNplzFEZhEAIReFbgQpUoAIVqECFqTAVpoIVrGAFK2wFZb/dQdTz9D8dIDLD7KKNxd7Ufeib0FShLdchqWMfhz4JNctvkpuI84O8dWHe6MaQt/BKlZ/VRYL9RlDYuX0PhaDu8lMlqE1VglJ/nm/mOWHXin3VAAAAAElFTkSuQmCC","Night Owl Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAADd/qHi5f+9/0mp9iK6vdqM2AiZnLR5uAt5e45ciQ1SU2E4VgYxMTshMwM6whXKAAAAAXRSTlMAQObYZgAAAGZJREFUeNptxkENwDAIQNFZqIVawAIWagELtYCFWcACFrCAhWoYHJY0tP/w855MNV+oY+pJ78Mr06lKnVMP+ujj9cKwaqjQjNms0AiQkdfGVCMWauGNC0IocKFcSCCChQwYceHfzg8xoXcBTE2XHAAAAABJRU5ErkJggg==","Ironskin Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAeCAMAAAAvtQ9FAAAAOVBMVEUAAAA4NQNYVAaJhQ3m3gqknxD//J///sp0bwlecIGuw9eRqsAqNkF5e47i5f+6vdqZnLQxMTtSU2FygmWaAAAAAXRSTlMAQObYZgAAAGFJREFUeNp1zDEOgzAQRNG3hCIp7fufETcpsR3JHWzQVE/6moCKA3FD1YXNkVAsaAkUNBKqwTq4ohimMOw3UASmlvARa9+Et6kbxl+cpozNvrIpYxNOGeH1hJV1GQQmV/wARH5AQd2i6R0AAAAASUVORK5CYII=","Thorns Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAADy/77i5f/f/1/M9iK6vdqjygeZnLSGpBB5e45wiQ1SU2FOYQcxMTsrNwMKNZxQAAAAAXRSTlMAQObYZgAAAHBJREFUeNplzEEVwzAMBFFRKIVQEAVRMIWlYAqmUAqiIAqmIAqLoS/xpfsyp38au6uyO2WNWW/2NVp5fKSsOevFHtf4tvBxVZty741MkBSGfxwREBqXr3TQhJaRuWjK9IVYoHIHSLiSZ46gkM+H/OcP7Cpt1/qpiMUAAAAASUVORK5CYII=","Rage Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAMAAAAbzM5ZAAAAUVBMVEUAAABgBQWOBwcxMTu9CQlkQwDYCgrzCwtkWwBSU2GUYwD2QECUhgB5e47GhAD5dHSZnLTjoBzizQC6vdr/vDfp1hv/zm3/8W3i5f//8tn/+9mny3c6AAAAAXRSTlMAQObYZgAAAJlJREFUeNqN0MuOwjAQBMAiBAMhgv//xpUQ74cT470ExAEH5jSySt3W1IZZ4jrstQ9TP10jveyYjDaIP2Qmf0g/tc9x/9o+1Zjp1KbSqEx2AuLQX5ItgoiNiFNBthaChKyy0lkU5MNMp0eSBHPHgrxp7a0cNS6Crb4gszvOuKD7cqWJrPJQuY1cKTtY63n9NRczs8PbQy5l/gOBBzUeQIFPOwAAAABJRU5ErkJggg==","Ammo Reservation Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAeCAMAAAASJ24jAAAAQlBMVEUAAABXHwAyMjIxMTt+LABJSUmlOgBSU2F5e45/f3/McwCTk5PmlwCZnLSmpqb/ugC6vdrDw8P/1jTj4+P/8mfi5f+Hd+IJAAAAAXRSTlMAQObYZgAAAHxJREFUeNqN0EEOgkAQRNGHM4xD4v2P6UbUCDS60LgwA7GXVT/1k87AEQ+Q/Vx+94P4MG1i0WPZ2QhnxK6lYNq0JIPerJNEkwgXGYvY2MiKg1V1tTSIrCpGxV1pWkJ1U0xOxqYle8pC0qlNy79Bslo3iDDrrdLOT8dv2yRetJslXN6BBM4AAAAASUVORK5CYII=","Water Walking Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAADi5f+hyf66vdqZnLRfo/95e44ifPYKZ+ZSU2EQT6QMP4MxMTsFJlQCFS+F1dlrAAAAAXRSTlMAQObYZgAAAGtJREFUeNplxkERwDAIRFEsxEItxEIsYKEWsIAFLKwFLGAhFqKh5VbKzs6fRzmz7I82l3XGmNFJEdRpa1ljzDHvqEybpQrdFVDfha7Mou/3l5svhgB6CoXhLpBC2lD2VCEdaKownWqkc6jyAeHrY+GC8qMZAAAAAElFTkSuQmCC","Archery Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAMFBMVEUAAABVMQikYBDFcQ3mgQoxMTtSU2H2lSJuPwq6vdr/tl+ZnLTi5f95e47/yIb/4byNe4WFAAAAAXRSTlMAQObYZgAAAG9JREFUeNplzGsNwDAIRlEs1AIWsIAFLGABC7WAhVmohVqYhVnY2ibr8/46CeQDKKnC36B60pOSXU6CdE3UNBY6xbPfshNEte92RiPiuDHaa4jNg5EfRjTksPBiwhId5IOB6gcZL6w2s3JfCKEFMz/AjECvx906LAAAAABJRU5ErkJggg==","Swiftness Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAeCAMAAAAvtQ9FAAAAOVBMVEUAAAAeNAMzWAZTiQ2G5gpkpBDM/4np/8xAbQgqNkGRqsCuw9decIF5e47i5f+6vdqZnLRSU2ExMTsqCp75AAAAAXRSTlMAQObYZgAAAGJJREFUeNptzsEKwCAMA9C07D7b///RidgFYYcZX48hoQAFgRx/EffdWsSWOGBWZCYdSjqvNdK1zElVY2S6bAVlbp0L6Kh1+tug3p9HOkuBdG3Fugaa0/3UKSyaUEnyMZLkBUHVIVoEIZ7tAAAAAElFTkSuQmCC","Bast Statue":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAtUExURQAAAP/emr2WRZ6ETnh4eJZyNkFwqFxcXDNknVg/FI0eJD09PSQkJBQUFAkJCceL4ecAAAABdFJOUwBA5thmAAAAZ0lEQVR42m3GQRHDMAwEQFEoBVEwBVMohVIQhVIIhVA4CkfhKByGTief2Mq+NiKkuKx9PVQFtYqT794JqDVEQK1xjPycrd88096bAFHeerhY3Bs2a9KtrgmtNVwE91p/sXaMHJl57w/nXG1PYaylpgAAAABJRU5ErkJggg==","Campfire":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAASBAMAAAC+3HPqAAAAIVBMVEUAAAD93QO/j2/+eQKpfV39PgN4VTxWPiw8JBM7JBMmFwzO3p6WAAAAAXRSTlMAQObYZgAAAF5JREFUeNp1x0ENwDAMQ1FTCIVSMIVSMIVQKIVQCAWjnDbttK7/YPnhTuA9b7shQoJOFgXxaIkSQ/y1IEYwToa6I6J7tP/sHtnZY2ZO7/bIXJ7L6ZXTu6vKdtVz8PUFs1tCrZnrDgwAAAAASUVORK5CYII=","Summoning Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAMFBMVEUAAADy+9Hi5f/X8W3A4ja6vdqu0CCZnLSWsh9+lB95e45pfBlSU2E/Sw8xMTslLAk9eMC9AAAAAXRSTlMAQObYZgAAAG1JREFUeNplxkERwDAIBVEs1EItxEIsxAIWYgELsVAL3wIWsICFdOgp0D3sPIpU44U6pv7p9/DKcKhS59Qffdzj8cywqlOmGTogMEvk1liWyD5Jmy9e6JsOhvunQmuAZIYEAFshugivxPCO6OQLztVz0Sc4td4AAAAASUVORK5CYII=","Wrath Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAMFBMVEUAAAA0DgxyIh3pfXWPKyQxMTtSU2FUGRWyLybYST94JB71xsO6vdqZnLTi5f95e46UFv0VAAAAAXRSTlMAQObYZgAAAH1JREFUeNplzFENxTAIBVAsYAELWMACFrCABSxgoRZqoRZmYRbe65JtpdlNCOfjAsCMGTxZtHHYl3oO/RL0VaEd68NLHef46U4iUDO9dmV3yiDnjc6dRZLDK4E4JFt3qKQe0lqLxMp5J9yEpwqpZ4rw5UJnxAzE2Iizf8/iHxNSTylEgtTEAAAAAElFTkSuQmCC","Dryad":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAuCAYAAAA2oQl1AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAB3RJTUUH4AoEAAQP65HmQQAAAwNJREFUWMPNl01IVFEUx38TOqXTorBQkRyDAq0mTKjRipDAMDJJXOUmWvUBUlQELYrBRVmESIVMiwpaSFEpuJoC+6RmdCHVkKNFqIkNYn6Uo1YupsWZK97LjEiLed7NfR9nzju/d/7nvDM2/nPVZGRE5583j47aFrJfRpJWinkhdwfRhX6w+2sGAN7CQnFQWio3GhujC5Eljchmkhw5tRqAyp1/Abh4V/bG43YA9lVNAVA/tRmAiqwsALZMtmuOv3Vis4ZIkTx56ADg6ssiAMZ6e4XkhBB4HgnZ5cNC1uCXVPquTQOQ4xKH9+ocGrkiS77qWt/YtRv2lFEA6p7vAmD6p18jOe2WFPjQSdQqP5+uiKPWEAU+yeGtwQgAR9vTABinC4B19SXyzt+/BaDTkRLXoZm75OdIqcWeOgZA9qYyANa0VAPwePwsAAc8uQBs2L4cgAfvZhckMeszeUT+O/IO3ZlpElJtfMOZHyMA3LZdB8D59JxWP4pEqe1MiU2rp+R1BnfmyihAoMkDwESoSzNYsTYbgN8jYQDC3aGYKr/IuTMStzOYOUt+91ZkvtrKuIYmibIrv9kmEVcImWt/urV1NEfUXbMtOj/iREuRrCoo0nKqyFTOnrU6rFHdXMPau1HgwtW6+lTk5joWvQRA22w+AL/ypDd2tUQ11Vk3Bf0JTUikLok02Ceq6ZvtkRnCJXtbUAicXokx3FQDQLHXo+XEnB2SR6TqJzgwqUUcWp+vGRYEZQ+lyvWcvMG4DpXa5nUGi76wQwfLtHpIv1IuBmkS4cBMHgB7LtwQ+1g9ZX9s1lTX4J/SurfP8tk7GIvMOeDT1dYTU5vZA7fqqpv7wsa+S9bN3kp9Zk8riNWRijwceAFA1f1XmqOO4Ygt3qxg3aSqIjLJnN7PctAU34FJYvm/iYSqU7kxVeZxS46Cr2Oz9nBkUQ+yjsjVPyOqM3qa6gCh1EMAfOiXDtKxyAdZR5SIMBCrI3PuY8kSmRNr8UnZzQl2Yuj70iZK2OsWuxJ1BsuI/gEyqjFOJ7vDKAAAAABJRU5ErkJggg==","Flask of Ichor":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAcCAMAAABS8b9vAAAAM1BMVEUAAABgNhdpNzdSIST9mADWnp/+ylCPVBCWtB/9+VH/+6aeaWLMhohqd0SvZwvHpw/sxbZj/PRpAAAAAXRSTlMAQObYZgAAAJRJREFUeNp9kNsSBBEMBSNuyWCy//+1K2Rn9gFdpUQfUgDoeA+Ag1kbS+19jIifjs4xWrDViKXETq2lIJ61HlSh1KqN9npK5/zAOQs2WvfrkgiASOOn91ID5Mw8K+acnz9Z6lfO4L7PmigNrkvHSevVRJhTCh0RC7a6NW0SDJGTBgteaQ/a6Bm0FgLzn9xqDX4AHPQXdBcLOccIt14AAAAASUVORK5CYII=","Slice of Cake":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAARVBMVEUAAACWlqsgDgX09PpaMBHV1eCwiVqxGC27u8s9Hwt8RiKBTivsyZmbDSGYa0Ln5/Bra336+v5rOxltPx7IIzrOqXnRrHuyvnCNAAAAAXRSTlMAQObYZgAAAKhJREFUeNqN0YkOgyAQRVGGYZUWcP3/Ty0PW9OmBriJxswhSFSIn6gm7msgUUrM83y7oIFEusZ8LhhFIlsCOIf7KIK27VliTgn8tXEDiZitBVnrXEpaO6d1H0E4Bg6EIcb4HD3MWb+jq+OIMYQ+5nyOHjVj9j1GYHljE0MwBiNcKMZ1Vcp7KUcQhaDUNGHsvSr1UUo8YvyhZZGy0gCeJK+u39zBv5EYwhcBBw5pjg5SWgAAAABJRU5ErkJggg==","Ale":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASBAMAAACk4JNkAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAnUExURQAAAPX3+tLd6fDQWKzA1+q8GeCqAs2YAriGAjZLYx0ySRkmMy4hAD2PmkUAAAABdFJOUwBA5thmAAAASElEQVR42mNgYJgJAQzIrFWCLkC4Com1e/cqJRcgRGExnDEOBcIzqKy0DiBEY5V3lHeEIrMYdp8pTwOyUVggWTQWiAkCDAgWAI81Ru0fcBisAAAAAElFTkSuQmCC","Heart Lantern":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAaBAMAAABMRsE0AAAAIVBMVEUAAAAIJT0/ARl5BzWSFDu2EjlKdkfWFUKGs4Pf6N4ZTlfkYjCcAAAAAXRSTlMAQObYZgAAAF1JREFUeNpNzgENQEEEBmAVVFBBBRWuggoqqHAVXsqH99z5Z/Nt2AAARiDTQHXfOICaI8ULwEe3106DmKIGaJnICl1YNLGJJczGA6GaTHzXA7levRFf+Pb88ODPwQtyhilxcgjrYgAAAABJRU5ErkJggg==","Flask of Fire":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAcCAMAAABS8b9vAAAAM1BMVEUAAADrJAH/fydrEABQDACZOTlqLiP/y1P/VgTgxF+QFgG/hS3/qUr/um/1HhL0YgD/91O75SXQAAAAAXRSTlMAQObYZgAAAH9JREFUeNqFzUEOgyAAAMFBRO3//9paFGhimiY9CNfZwwYAkgNAGHCy2R3GnLCJih3HgBeLKGiKLA+Yxaaa7DJDnk0OSXUac7R4mQSlzz+Eh6x0Odq+mK5t9Lzl2aoI3hpWWRI7XDWrN2DVOswV/vDZYVfgoapOhS4zo4HCPX8A2NZWRek/coAAAAAASUVORK5CYII=","Crystal Ball":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAeBAMAAADN62OsAAAAKlBMVEUAAACBpf9HfP8rAVYtRboSLHRvAt63zP+YNf3p+v/Rpf6vYv1NAZrQ4/+j9bjTAAAAAXRSTlMAQObYZgAAAHpJREFUeNp1zVERACEIRVErUIEKVqACFahABSpYwQpW2ArbZVE/HJW9f8dhnin1yEurjURFVYlDEhQFQEAOWco0BfSdSQQO+IK6/glDc+ukfzEUshuXTjLOUwwpzGOMnoC5mj8wP9LyxSytmomINZN8sYpVr7ns5tbBD5tpX6FSBzWSAAAAAElFTkSuQmCC","Sunflower":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAcBAMAAACE1hKaAAAAJ1BMVEUAAAD/9wH1xQG6sj8c2D7fVwEelkh3XBKfJQANZSQ9Qg1hDwEELQ+eAIyRAAAAAXRSTlMAQObYZgAAAG9JREFUeNp1zVENwDAIRdFnoRZqYRZqoRZqYRawgIVawMITNbZk4wN2+ToJAXwJJJAtzSc72GdvVpsAbB67N6vMwXt/n9OZTV0E7TkohUEql0ozZ2HPSQgMycEoHFQyOwiOxeQg6CxNdXrEj99HtS9MfmZFOanPCAAAAABJRU5ErkJggg==","Peace Candle":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUBAMAAAB2TKBEAAAAJFBMVEUAAAD+4uj/wc7O1t/+ldKps8X5Zb2IlrFmg4rlHspEXWMwO0LaohMhAAAAAXRSTlMAQObYZgAAAElJREFUeNpdxkkBgDAMRcFnAQu1gIVYqIVYwEIsxMK3EHMsB0iZ0/BwWOP2i9vINTm2HgnS6CGYe08QHLNH6I6+UKUIVQvUhTcn7Hkn2SC3P5cAAAAASUVORK5CYII=","War Table":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAWCAMAAACWh252AAAATlBMVEUAAAA/KxsPEk65hV4nHR0qGQszVMNedyWaaUhQktbpt4AiLA0uKQ5mT05+nzTKl2seJJcvMDVMLxVhMRRdORpFR1CymZcwGQU7UxqanDPJpOpHAAAAAXRSTlMAQObYZgAAAJpJREFUeNqV0NkOgyAQQFEsawvK7vL/P1oGNKGNBXqfCHOiGRCqIinUqgGUgvG6zvOFpPwHKHUcShEC44Kk3PeKNMGU837bOF8WnltS3pfJCHilppvK/QjQGmMh8Fdwo/UYaNcHlIYQo7WMPaoYszbGECjtA5SIc8bA5fMMsDHO5XEXwJpCwGcRun5QTrDo+Q4dkJe56eMdfoM3oPsNWW8U/CYAAAAASUVORK5CYII=","Sharpening Station":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAYBAMAAAAfR1CMAAAALVBMVEUAAADJvLClpaWxhWeQhnyieFxsYldgYGB4VTxZUUhCSEpLOC1AOjQ3JhkbHyGU0BqMAAAAAXRSTlMAQObYZgAAAHFJREFUeNp1yEEVAyEQBFEsYCEWsNAWxgIWYmEsjIW1gAUslAU0hEfyctnZOvXv8m3uzsg9pVojN2xG771GbkMR0jlSO2gtPbkNt8FSaMLNNF7v84RoiX1cV+c8mQsGwHks9V5tZz48s/PPMkP5BTd/AHMkpeNs5BUcAAAAAElFTkSuQmCC","Heart Statue":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAeCAAAAAATRYE5AAAAAnRSTlMAAHaTzTgAAAB7SURBVHjajdDRCQMxDAPQ20RbeJisonk8U9dpRBCmhdOdvowemMSXUjvA75SgqndIoIrsXgtIoPqzIyI1H3oDJvIZFIPqDADp+h1cosnUAYa6XWcYcp1hyHUCV/UXIAHQ7cP7MFp5D2fVWnOQs+oO/DUvMwMJTuapSoAvoojojf1h77UAAAAASUVORK5CYII=","Star in a Bottle":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAJ1BMVEUAAAD9/9Lt9Ir0/zPw1SL/sxOzuEe/j29wiVyXa0tyUThQVkcpHhWP3bBDAAAAAXRSTlMAQObYZgAAAGJJREFUeNp1zzERACEMRNFYwEIsxAIW1gIWsICFs3AWsICoW5i5Isnwq1dss8IWE+a4nt7flbiLnGM0VZ2O9Eki9yCQEqbTkVI10JFWKhJRCiSzWiYqYIiUkyfNR436ef32ATs4Zb2FL0/0AAAAAElFTkSuQmCC","Bottled Water":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAaBAMAAABFrWFOAAAAIVBMVEUAAADI9v6Tsf1xl/tXrb1Sgfoza/k+eZQeVNwJPb8UKEAW2besAAAAAXRSTlMAQObYZgAAAFtJREFUeNp1z0EJwFAMA9BYiIVv4VuYhVmohVqohVqIytHBYC38HMI75BIAegPgT7lfJNV42EI1mJRXU43yTa61qU6jmdlkRGbGZJYmvRA2WbijE3KvS8LH47cHurxiSRd1rDYAAAAASUVORK5CYII=","Waterleaf":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAD1BMVEUAAABO4MUgqHVjlghCbQjS8ifqAAAAAXRSTlMAQObYZgAAADJJREFUeNpdxjkBADAIBLBYwAIWzgL+NXXrlyla0diRmNwZwvRJWlScFEZdoYInzJ88WbNwCIGrxYucAAAAAElFTkSuQmCC","Ammo Box":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAh1BMVEUAAAAYJgU7NR8wTQo0JQ0gMwZKBwgoQAg1NTVAZg0gIBRjVSl4ZzxqqxlISEhOTTZPTjlTTUZ/f3/htF3FuauGABtgYGDDw8P/+bU3NyVhQhKhJQY4WgzsIShPgBF5cWd+fn7LtEnBwcH12qQOFwNCKACMHiB4XBnNNDehgULxV1/pzEX+rMdrTRtZAAAAAXRSTlMAQObYZgAAAQNJREFUeNqNz9uSgjAMgGGa1pBSdikqh1VE8Hx6/+fbRnAW3Yv2v2CGyTeTJopcSkWTEKPPPECp5fKPIN5uH8QDeLzdvgDi47HZFMWEeAGTPD8emRAhFsUAiMJBnvMjVyuliLpu5+q6sgwHPOZHMhHie4xIiFDAhMfwjKgs1+vLBVHKw2FEHiCElABZlrquVwAG9zvi6YSotSNeMHOlaVXt97xi9q8QoHWSpOl8vlgAtO3XpLYNAULwuKrqGiD+aLzCC+I4SbJsWCHfiuMwMKzgM6VsGq2N0WNShgE+87WiaYypa2uNy9pQ8P5EY/qeUd8ThQKAHxeAeEZkLdH5zF/+94JfNewnyTOjghAAAAAASUVORK5CYII=","Crimson Tigerfish":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAALVBMVEUAAADsxbbdrZ3GrKjcgWS3YUmuZES2WE6GTDSVQUGGNztPLR9SISQpFg4vDA7rms/jAAAAAXRSTlMAQObYZgAAAJdJREFUeNqNz0ENwzAQRNGhUAqlUAqmEAqmYAqmYApLYSkshaEwGBorqnxwNuocn/QPA6xJEvAoKk0fKRHNjROgSESlHMcJZorCW5GZjdGKvV8WoTtRmVErp7ztIHZZURs2o11W1EZEXNEmuB5MKCHs8ht9xBFBZEKydo+gkAndvTslIBN67dUJIBeQ7Kksq3/IglRAPMoXPr3Oh7Q2R1QAAAAASUVORK5CYII=","Bewitching Table":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAiCAYAAABIiGl0AAADVElEQVR4AcXBb2jUdRzA8ff32ykMmeK/DU6XV3tgZzIs+sNYkaVGxzjGZLEjkHywDlsNV5BwJrQhdAdCaUkPxh7s4UnCkosuUGHRcmj7447t5la0nXmnXlujiVRQv2/fz7zgJxyxIPq9XvzNiWnjxLRhhRKJhEkkEoYVcmLaODFtKNF4RDkxbbBMm0KoXoPQcUdhfbzuS4N1N3YVt0hrCJE8k8ZtTXwXouOXlxSWE9MGy7QphOo1CI1HfJToDccQhuOUE2kNIfI3pnCrDfyO8G/ZjhilPL3hGMJwHKHxiE/HHYU1F91vsALxboXL2OpBRJiXEYX8NGLL1iDi2mtBhP8LBzG2ehA3HXcU1lx0v8EKxLsVlsYjvlA4YrAK+WlEKBwxWOlUUuHy7eXPKGf73iVEIZ+nnFA4YrAK+WlEKBwxWBqP+GZzOcQdp4Zyhlb1sKwjiluaTxGdb9QhTnbMIYZW9VDOHacGMZvLITQeUZSEwhGDlU4lFWUE/VWGMrqffh/x3uWjiKlCUVFGKBwxWOlUUmFpPKIeqas3WKdOf4A4eeIUIp1KKv4DoXDEYHW+cxhx+M23ERqPqKC/ymA9vH4t/4cfFpcQGo/4KNn2WwNi50M7EBOzWUR1QxHx1OMB/smV0TnErYVGxAsvPocYHx9D9PX3ICorlhAaj/ierwghDh1opJyJb1h2euQ8orWlHrczZ4cQDwY6ERur1+JWVb0ZcbA5iujr70FoPOLLzGe5pxHR/uEJxCtPtiAy81lE1ycHEDsf3YGYmMwiWltYdvSjJOJgcxTxVtfriCOH3kX09ffgpvGIaq991WDtrnsWt4HM14jqhiLi/Ll5xNmvjiAmJrOIrvbPEfuaNiFuLTQignW1iOLtnxALt5cQqUtJhMYjvsx8lmUZ7pOZzyLWjSwiop31iInJLKIw8z1iX9MmxJWR7xDjhST3RHBLXUoibiwOKiyNRxQlQX+Vwdp4dxtiYU0OtwrfA4im3btwOzdwFfHrH38ipgpFhbV1/TMGl8qKGcRUoaiwNB7xBf1VBquteQ9i7sefEReGc4ipQlHhNoDBZfT6TUUZlRUziL1PPIYI1OxB9PZfNFgaj/go6e2/yEqMXr+p+BcuDI+xbJj7aDzyF6KbGxLimxEtAAAAAElFTkSuQmCC","Obsidifish":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAGFBMVEUAAAAQCissIF5mXMJHSG1+gMRzAADJAAAdWpkpAAAAAXRSTlMAQObYZgAAAJBJREFUeNqF0YENhDAIBVBW+Cv8FViBFVjBFVz/fqnRy0l7xJjyDFCi2VdAYbYRZZ4wLKVS50msRKlnME4cXIgKIkg9B6OXAa7cHRHeCiqS6QGvqrfM3ipKgvClGAIZgo1A4yEYXzoZs6O6CmrRl2iHrIvV+drqV9RxbmxIWCvjxPwrdwPfyZzK5583gufdyAeWuzQzSliKzwAAAABJRU5ErkJggg==","Bone":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEUAAAC0tKCZmXlsbFBCQS8wLyEokDisAAAAAXRSTlMAQObYZgAAADBJREFUeNpjAIPQUAZUhosxlIVgKBmjMlwEQTIIRqiLEohCMEKNgTQqI9QYwcBuMwBBqQ9HRO3bFAAAAABJRU5ErkJggg==","Cactus":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAYAAAAiYZ4HAAAAPklEQVR42mOAAR4j7f/4MEwd6RpgAisPa4KxZ4UgCpYP8QJhuEYKNSAwrTRgKqRcA/1DCaaAfA309wPtUysAKXAxpKJeOe8AAAAASUVORK5CYII=","Hemopiranha":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAALVBMVEUAAADsxbbdrZ3cgWS3YUmuZES2WE6GTDSVQUGGNztPLR9SISQpFg4oFg4vDA66ep+EAAAAAXRSTlMAQObYZgAAAI9JREFUeNp9y0ERxCAUg+FYWAu1gIVaqAUs1AIWsICFZ6EWcLATDRvogQvZHGDeN/PjHTkfDV4KwVQrQStgFhyfSifjY8r1OGqyUsicRDXCCZgHSM6OvZAiNTNyUgaUiDitiCak6F7AVlREB7GVR7vuFm+yla+udjcGQRiBkqs983Qiem4JjKzOyyIvi/BPfnrFwo80LEXSAAAAAElFTkSuQmCC","Ebonkoi":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAMFBMVEUAAAC5pX+SdnmGckpyapZ0XmGPS0teV3piS2teTE5aTDJUPFA+LUsuJCUrIxUbEiLkh6q/AAAAAXRSTlMAQObYZgAAAKBJREFUeNp90GENw0AIhmEs1MIs1MJZqIVZwAIWaqEWsICFs4CFd5f2lixpGb/gCSRfkN8CkL8CEQFPwtxFlbfFXWargFoDLUSICNfWTK0UgYED2oS7ZOZBWGuq5s+SyzpAz9lS7jKvGNDUzQu5Mqqqpy+V9N5DI4xcj0L6vm+vACSXQghz3/oZY015FAF8v+SoZJgNmVBKfKEW4fqJFPIBqNMDcg23s08AAAAASUVORK5CYII=","Golden Delight":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAWCAYAAADXYyzPAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEVSURBVEhL1ZI9igJBEEbHwEhE0HTY1ETEAzhqsoGhCAuC4jHEwNDUxAOIodmysqcQjDYw8QTuBYxapugHUtow/k1jwQu6e+p7XzBB0vkq5c059vr1k5q428iZGES7QSQsaqHwsgKpiRGBOf4Km3VbcJ31no1LPjrAJXqamIX55ENwCVxnYD9xAW/iejlrYljUQa6z/tm4fx/xuF8UEPSGocCZdwQIKaDFGjxW61HM8IDwZ1sVmp8FQRdBpIUUAt7ZuyiQujisRSZmNJ0Jy9W3gBAoQgECELoKaWEllxH8ixFu/vbC/+Eo6CIUpABngl2Qg8+fmOGi1ekLfEiBW2GfvAsh402sh4VHsXHJ51rIPdg4NUFwAoqSKJWugdGYAAAAAElFTkSuQmCC","Flarefin Koi":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAFVBMVEUAAAD5/7T/4nTTdzvDUj56clcyFAAQvGOCAAAAAXRSTlMAQObYZgAAAIdJREFUeNp1zEsNAwEMA9FQMIWhMBRMoRSWP4RqP1UvWR+s6EnxzHTO1E61M4uUq0UBu4mgkpKjwU3G3CHHscu9RJ7s4owK+dywiNgi+ZxENxmTP0g3GbXJCckuV0oSSOws0tESQEJnFYFQK8FVJEl6X84qo33+wyq3/RadNykPdN6lvdp5kS9Hm0SrdFXsQAAAAABJRU5ErkJggg==","Cobweb":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAcBAMAAACNPbLgAAAAD1BMVEUAAADBysuera47RkgiLC5aXe8oAAAAAXRSTlMAQObYZgAAAFNJREFUeNp1zDkNwEAUxNCh8CkMBVMwf0yRoqTZw91rnDfytYsh8S7rWRXnJBk7NbtsZTgqQil1l8xgB1hli620w6LoYFHNotf/f1cic1XsXTG7HuHQI5l5shP9AAAAAElFTkSuQmCC","Damselfish":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAJ1BMVEUAAADV1dWL7PyN3vmHs/xbhuBPgNc/bM4vWMQXTbEIJHMELTsCDS4lkRqKAAAAAXRSTlMAQObYZgAAAJZJREFUeNp9y0GRBDEMQ1FRWAqhEAqmEApDwRRCwRRMQRQ+qK3p0xyS1k2v6ut3AHoRMNEBd6EZzV/XXQj2Dui4ios9c3bPuokHa+fcYxQ6izO+Ua5dfRGP9Y1iRzVnAT/RpyroszyYGRVFoLMYdnZ9oNBZPGNlA2taZ/HI1QtWpHUR+fuQp3UViZwW1pt4WEKvoie4yz9xXb2pr2KomAAAAABJRU5ErkJggg==","Deathweed":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAASBAMAAACgFUNZAAAAFVBMVEUAAACLdpm1RpBzWYSKMmxERXJ2K1y/XANxAAAAAXRSTlMAQObYZgAAADdJREFUeNpjSDMWZAADOMMlzZhB0BiZocRgDIJpCAYQCAK1uKAwwErhDDANAvgZocYIBoyFwgAAHK0KfwwanksAAAAASUVORK5CYII=","Armored Cavefish":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAGFBMVEUAAADV1dX1n3TjYmvAO6lfNo5DEhYfCTqdYn6lAAAAAXRSTlMAQObYZgAAAHxJREFUeNqNzEERw1AMA1FRKAVTMAVREAVTWPqdzO/RSarjm9FK0pwhmJlVpqq6u4e4a5Wptp2kwye9CcDMBQ7sctI9lXRis8hJ5xIfWAQApuPg7HKO0w4JehB+cC8YDqwy1ypOQHdS1d0GpDsRToykBxG8i/C7iD9EPMoXaCB1JUhKIPkAAAAASUVORK5CYII=","Fireblossom":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAUCAYAAAC58NwRAAAAdklEQVR42mNgQAP7zMX+gzADsYBoDScshP+D8L9QJjAmqJFoDWfMhf+D8L8QJgg+CMFfvVjBGEMjyRrQPUtQIdkaaB8PMLDUTPo/CONyKuUaYpxs/4MwTgUka0C3EqbB1UgPjCnXgA5gGmEaCPqFZA0kO4mQBgCd2uCJMJXEKQAAAABJRU5ErkJggg==","Prismite":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAALVBMVEUAAADx9XXV1dV19ZJ00vX1lXX1dZmodPU1OQQEOSYlFH05HgQEKzk5BAQbBDk1JaU9AAAAAXRSTlMAQObYZgAAAKpJREFUeNp10FENBDEIBFAsYOEsYKEWamEtYKEWamEsYKEWsDAabvd6+0cnJCQvgRDkTkaMuUhhDLKUvHpXa85EVxTyAN5c/NgshEzGtOYAnGyrkDvRFYClwx0sZa9uu1EqIZOkIzrgICt5B6nWABzlmSAJ+FmWYqeVkhljNhgw7a5arq4GJzkUQ0uRVADcJ0SvRYbB9594FJntJ8wHpRZZW354EiH/XSr5AuqtFizyi3epAAAAAElFTkSuQmCC","Feather":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYBAMAAAASWSDLAAAAFVBMVEUAAABlu+xTmcEXf7oAQWYAN1cAJDmbsZlYAAAAAXRSTlMAQObYZgAAAEZJREFUeNptxzEVADEQAlEsYAELayEWsIB/CfeSIimOqebjZqPCHrnBmpmGiDr/8J4qiLj2F+wPfrhfsJigIGcLzAAdRscHvkccbVIIZA8AAAAASUVORK5CYII=","Iron Ore":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIVBMVEUAAADq5uLSwL61pJW9n4uMZVBpaWlXPDxDQ0NOPjouJyC5eZwCAAAAAXRSTlMAQObYZgAAAENJREFUeNpNxkERADEIA8BYwAIWsHAWYgELWMBCLUTlzfTRyb4WAKQBPGLFeLQfM8dzohkWHTaz5NmuGrzcreCBJFh+mC8n+y/EgqUAAAAASUVORK5CYII=","Hellstone":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAG1BMVEUAAADzuZPuZkaOQkLBKytmIiJOJCQ6HhQpFQ6vZsoHAAAAAXRSTlMAQObYZgAAAD5JREFUeNpNxjEBwEAIA8BYwAIWsICFWIgFLER2hw6fmw4ATgAy1yVlXMMuv5ijYmdWs2tEJFIZ2Drj5S8iHyMzHzdzG7HJAAAAAElFTkSuQmCC","Mushroom":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAYBAMAAAAMkBB4AAAAIVBMVEUAAAD+zIztoEXDaSf+QzrJLS1zOQ9WKQlyFxc5GQNMDQ02hHY4AAAAAXRSTlMAQObYZgAAAF9JREFUeNptxkERwEAIBEEsrIW1gAUsYGEtYOEsYCEqU1d5QWU+03bTOXfLEiJPbQsA6F7TQgRIhtfwiYgkI/IZLmTS3XOb+vIatm7RpW6bNmvQr7YL5J8F+J9N1bb8AjphONknYUJdAAAAAElFTkSuQmCC","Gold Bunny":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAaBAMAAABWeiG6AAAAD1BMVEUAAAD/+bXLs0mTfR5TPgvCpcEkAAAAAXRSTlMAQObYZgAAAE9JREFUeNp1xzENwEAQxMClcBRMYSmYP6ZIr1T5nAtLkyTGvN0Ucec47qxdKcxK4VgXClNwZaHVP3I0Fb+MztFMvZlYqLbmpqAC/FLP9OIDc20sXUxLXz8AAAAASUVORK5CYII=","Golden Carp":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAGFBMVEUAAAD//tH//JD/+TvnshyvfRF+VQxNLQjjJpZiAAAAAXRSTlMAQObYZgAAAIBJREFUeNp9ykEJBEEQQ9Gy0BbKQizEQizEQuwvU7Awh+r5l8Aj9c5Pn2ID6F3mnLgPc7CLuwEGpJJd3CClNiRxlcROdNwDqUWmDDDUp0CMkLpLmw/wLhGdiNQutqOWxOQqDQJSUsFFKpH+d64yJqZGsMsQPDJzk/aM6y5lj9QuPyHcdQNdZSuGAAAAAElFTkSuQmCC","Shark Fin":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAQCAYAAAAS7Y8mAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABdSURBVHjaYyAXmDjZ/ceGpRRlwZjeBhM2aObRgyg4ojAHhGHyA2gwLoOali0AYZiBGEFAbYNHoksH3mCoAuwGYmL6GUzIQGwG4MUuYYEgDLeA5gajWEA+RhhIc4MBKdLUzGTHMRgAAAAASUVORK5CYII=","Ichor":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAWBAMAAAA7hAFPAAAAElBMVEUAAAD/+6b+ylD9mADHpw/EZgnvi1WnAAAAAXRSTlMAQObYZgAAAENJREFUeNplyjENwEAQA8GlYAqmYApHwfypRPrmL0lheYoFwtnFKB9QiLIBkWcjsTeIJU8vYr3xT+jYow065xdoy8IDWmgWL4vhGTIAAAAASUVORK5CYII=","Mug":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAaUlEQVR42mNAB2beyf/JwbQzSNbI8z8If/3+C4zXHLgOwjj5UPVUNEhSzfg/EoZLXLr7EoRhGnHxaWgQmtfgCmdsOAvCGHz6G7T79F0QhmnExR8RBkEB3MCBNwgdDC6DMA0kjGHqqWYQAL8ipuPpnVcAAAAAAElFTkSuQmCC","Coral":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAaBAMAAABfkYHAAAAAGFBMVEUAAABACA5iFh6GKTLJRkLrclCuOEP1q4Rkdk4vAAAAAXRSTlMAQObYZgAAAGFJREFUeNptzlENACEMA9BZmIVaqIVZmIVZwP4N7nIwoB+ER5oGkQwgMyvQTP+HCjeFEwfQItFCT7hRx3FBVvrKDtHeuADQtxYb+i9z9msVeNCCY6QixSB5gYDzXiE6Ihsetksr1UuCIm4AAAAASUVORK5CYII=","Lens":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAWCAYAAADJqhx8AAAAX0lEQVR42mNgwAFENBz+I2MGUgHZBsA0hK/dC8Ynvv0DY6INItsAdI3o8gQNoroBMA20NwAmYFc5BYzRNRL0CtUNIBTNw9EAXLGBrhEWvQTTwRA2AJdBRGukmgF0LxMBn1ByqGOqRsQAAAAASUVORK5CYII=","Variegated Lardfish":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiBAMAAADIaRbxAAAAG1BMVEUAAABj+f95wlyilidHoaRTkD5dVhYsXiADHzBLB7RYAAAAAXRSTlMAQObYZgAAAINJREFUeNp9zDERxDAMRFFTEIWlEApLQRRCYSl82DeZc5FCzi8861dovQNYXwKoWBxkf5UrnASkcnxx5yCocOLkjgfZ0DEStkYBaBUlo3iSJ0pCFUJ/SpkEHUXqhnTwKABd/RTCGgRVKU6y704CsQCgWJM8kf88ymuis+xJWB/Cfmf5AYpejZVgPHVOAAAAAElFTkSuQmCC","Double Cod":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAMAAAANmfvwAAAANlBMVEUAAAAyRTLr8uVyz3M+RTy/1Ljs/udWqKAwaWJJqaFahGyWSVRxREowTEVZj5ArY00WN0ADHzDtzzxrAAAAAXRSTlMAQObYZgAAAL1JREFUeNqV1N0KwzAIBeC0aZufpup5/5fdnGxulEEUcuUHxwRM+lf4VJx4Q+Q8RYjiBCilVoBIATCGghgBalUg0juzyBgiABAhCkoBmEtRwEzEz5onPqg27VwXc+8KZgnQmsVoCJECouMgipFaWwM8RMG+b1tKc8SRDUvkYFmiRGN+Qc5xIuKX3V61rhECfD88YM2cI0Tb9uiGAGsamCW+EBoCvCMUzBBHthAakpIPGiG2WHcQIfdPwgYNkgcigSQV6JMFwQAAAABJRU5ErkJggg==","Obsidian Skin Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAMFBMVEUAAAAgGj86MGZGOnpaSKgxMTtSU2FvXbstJVN5aMG6vdqZnLTi5f95e46EdMeZi9OZdcZVAAAAAXRSTlMAQObYZgAAAG9JREFUeNplzGsNwDAIRlEs1AIWsIAFLGABC1iYhVqohVqYhVnY2ibr8/46CeQDKKnC36DGpCclRzkJ0jVR01jolJjjLTtBVPtupxsR+0a31xCbB50fRjTksPBiwhId5IOB6gcZL6w2s3JfCKEFMz8fs0CvUKCWVwAAAABJRU5ErkJggg==","Moonglow":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAUCAYAAAC58NwRAAAAW0lEQVR42mNggAKPGqn/IKyRyouCGXABojXAFMIwujyGRrI14HLCUNZw4trb/yAME4fxqadhxpFP/0EYphDGp54G/8Uf/4MwTCGMTz0N6BqJjgeSNRDMBwOvAQCaUiAweYSaowAAAABJRU5ErkJggg==","Mana Regeneration Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAAA4Ax7mCosxMTtSU2H2Ip+JDVb/kNJcBjKkEGe6vdqZnLTi5f95e47/weZrhRlrAAAAAXRSTlMAQObYZgAAAHZJREFUeNplzFsZgDAIhmEqUIEKVKACFahAhVWgwiqswipYwQzq1B30v+G94PkAzonAu0HJRf7kmvlP4K6JUkahk3PNG38JLNK7D1NKZEaIuFB9d1KlhYDhYX5pJpiaRdNE8yCN9jAxnR0kX4l3nBQXYutcZ/AAGKQ5YYj4qWsAAAAASUVORK5CYII=","Calming Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAMFBMVEUAAAAFDDIVKIoxO59mZckxMTtSU2ELFlKGu9lHRMl6k8S6vdqZnLTh/Pzi5f95e45isM5GAAAAAXRSTlMAQObYZgAAAHVJREFUeNplzFEVgDAIhWEqrAIVqEAFKlCBClRYhVVYBSusghUUPcc59D59D/f8ADFVePZS+6Z/yt7lT5Cphbq9hUnpez/kSxDV2X1oyERslmhtOCGOZomj1Rb2srI4VwpyJnklj2AiFIzHrZWXGW+thBKDxBM/dkQBgDYFOwAAAABJRU5ErkJggg==","Daybloom":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAYAAAAiYZ4HAAAAXUlEQVR42mNgQAPfbkn9B+OjEMxACBCtAabw55wUMP5SpgnGMHEqaIA6AaYQphGn04jWIDfN4z8Iy9yIA2OYAphTYPIwTLoGXDbB+LypKmCM4QeSNaBrJKhwJGkAAHxY81luNEU5AAAAAElFTkSuQmCC","Shine Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAAAvMgIxMTtRVQVSU2FqbgmFiQ15e46ZnLTAxhe6vdre5grv9iLi5f/8/qF6Yx5BAAAAAXRSTlMAQObYZgAAAG5JREFUeNqNzF0NwDAIRlEsYAELWMBCLdTCLNQCFrCAhVqohWnY2mT9fdl9OgnhA3gTga9BsSQnqRidBOqaKGksdJIVu2gnkEjf7WRXdd7IfrtG5YWsd0T0qLgwt5v/IcasIdTfmdXuTTMBWzDzAeyWSdkIsQrMAAAAAElFTkSuQmCC","Gravitation Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAABWEKQjB0OGIvYxMTtyCuZSU2FFDYOqX/8yCmC6vdqZnLTi5f95e47JoffTuuV0AAAAAXRSTlMAQObYZgAAAHNJREFUeNplzEsRwDAIBFAsYCEWsIAFLGABC1iIhViIhViohWpoppMPaXf28A47C9CjCjObWqr+ya3wn8BLgVr3wyKXVi7+Elh1/U6aCaJYPmjiTtKbI7PfjtQn6SA5mhHSQcgobq8iIaEMRXZPRUJaGnwA5RI757ZssAAAAAAASUVORK5CYII=","Shiverthorn":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAASBAMAAACgFUNZAAAAFVBMVEUAAACAtOIoafDl7vW+3+goIKgomPB9B2/eAAAAAXRSTlMAQObYZgAAAERJREFUeNpjMGaAQAY4Q9BF0BiIkRgMaUAqjQGZwaCUpgTSg8RgUFJicGFAYgAFQ0G6EQygMFAOhcEgGBqKxlCC0hAGAMV7DWsmdZgxAAAAAElFTkSuQmCC","Lead Ore":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAHlBMVEUAAAA0Pk4+UnIcHBwaIS1VcnuOoai1trvq5uIqKipK6ZXgAAAAAXRSTlMAQObYZgAAAENJREFUeNpjYGAQFBR0YQABGEOwo1xJyQWJIZhWnhaKyugA0oJAFoKRVh4KUwxlhAJlBI2RGAwzjSE0gsHAYAylIQwAX8kVH03aXNEAAAAASUVORK5CYII=","Seafood Dinner":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAUCAYAAADoZO9yAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAE2SURBVEhLzZQxSkNBFEWndQF2aUVQkFRCCsEVCCEgBAIhuAMbW1G0tE2RytJOJFW6bMA6e0hIn2rkP+fE8WZGjQT+PDjFn7nz7iFF3LZzv+f8T3TcJyG+nm6/4WPC8f8nVR6zc5HO6ZGPoWjZbxn+8TIJ9whR/PZ+YsQyFaEuP7WLUDybToy/CigqdDs8/oaKhfqvqV0EgcnozkAgKzK+SpMRYY8KHF7sG0GjIJHR9cBX8JBFLJi2DgzOf4M87znne0OAqV2k0TzzFQjoAn5qvjWncJ97rzn6yxN5fnk1COiCm4cng2/9qfVb8+xjP33liZy3e75iMV8ZKpIrYJGiArxXEfroL0eE4YDgeoH8UekihXvyvGcf9xsCTDEijArlIKeksjHkQl1+tl2opLIx5EJdGOc+AHk41MWx9ELTAAAAAElFTkSuQmCC","Magic Power Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAALVBMVEUAAAAZBDZnCuYxMTtSU2F8IvZCDYmjX/8uCWBPEKS6vdqZnLTi5f95e47IoP+XNfjkAAAAAXRSTlMAQObYZgAAAHZJREFUeNplzFsZgDAIhmEqUIEKVKACFahAhVWgwiqswipYwQzq1B30v+G94PkAzonAu0HJRf7kmvlP4K6JUkahk3PNG38JLNK7D1NKZEaIuFB9d1KlhYDhYX5pJpiaRdNE8yCN9jAxnR0kX4l3nBQXYutcZ/AAGKQ5YYj4qWsAAAAASUVORK5CYII=","Blinkroot":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUAgMAAAD5DFXkAAAACVBMVEUAAABHUz7+wQJ9zDBkAAAAAXRSTlMAQObYZgAAADJJREFUeNo1yaERADAMAkAMJtNh2A/TPds7GvPmgUFQCC2ckphFoosVFcIoR/q8WYhyAfljDwuQ5fg+AAAAAElFTkSuQmCC","Obsidian":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAHlBMVEUAAAAODR0lJSUsIF5XUa0dGzkrKFRKR39+gMRBQU3SGhWcAAAAAXRSTlMAQObYZgAAAEVJREFUeNpVxlERwDAIBNGzgIWzgIWzgAUsYAELcZtJM53S/dkHwN3x9MJbiomgkh0/VCZlA8WVOQFzlnriiOcfYHZ/sQEwbRdhJqnznAAAAABJRU5ErkJggg==","Titan Potion":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAeBAMAAADePCNYAAAAMFBMVEUAAAAYLQxcry4/dCIxMTtSU2F30UYoShVLiSmf4HzF7LG6vdozXxuZnLTi5f95e44bcTWCAAAAAXRSTlMAQObYZgAAAHJJREFUeNplzFsBgDAIQFEqrAIVqEAFKlCBClSgAhVWwQpWsIJv56b363xdgD0ReHopdZY/ean8J3BTR5nfQyPXpa78JbBI+94kAlIlMBqYpohhaT1NI9U9cWSiOk2BpWcJd4pJRx6mSwMd9+hDKGfQcwNZoEnZ7lnVmQAAAABJRU5ErkJggg==","Glowing Mushroom":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAYBAMAAAAMkBB4AAAAJFBMVEUAAACxroPX07UsKBxMSDaLhV89OSlfbv8/Qs82MiQREkQfIG6myrlHAAAAAXRSTlMAQObYZgAAAGlJREFUeNptzlENwDAIBFAsYAELWMACFrCABSzUwizU3G7ZltFm9/VIeukRITEnvfkcIVmH7g5B2F1X40EKMyeO7pmZBaK+OKQKTa/Ng+0Out001NjN9Pq3Gxcm6DO6O7Dh3+J/phhKm09tejk/rgkqhQAAAABJRU5ErkJggg==","Fallen Star":"data:image/gif;base64,R0lGODlhFgAYAKU6ADwqA0o2BUw4BVVBB1dCBlhDBmJLB2dPCGhQCG1VCW5ZC3VcCXheCnhgC4NoC4hwD4lwDo5zDZZ7D5l+EJl/EaGIE6SJEqiNE6qPFK+UFbqfF7ugF8KnGcWuI8muGs2yG9G2HNC9L9i9HeDFH9vMO+TRM/DVIubbR+fcR/DdNfLdQPHmSevoW/PmX/HqU/HuXPHuXfLuaPXuffHyZu7zb/L3cPL7efL/g/f7pfj/uhUXMhUXMhUXMhUXMhUXMhUXMiH/C05FVFNDQVBFMi4wAwEAAAAh+QQFCAA/ACwAAAAAFgAYAAAGtsCfcEgkEIjIJNKobA6NNhvTmYRKj1Rko6FSbbNarrcBFm47nVIJ/c2e0+tOm7itN9Cp1O2WZ9v/b3l7fXJ/RmiDKTExOTmJe2hGhx2Ji42PN5FYAQEcHDAwaotqoBISnEScnqCiMaQwpqhInHgpaoSySbQdebcpaLlDnKaQcGilpwGpAcSZxh3IwVvFEREDA9WIN3M/087V19mU22Tddx2xnMo/6gHidmjpsu3vDe3Buvf6VPpBACH5BAUIAD8ALAAAAAAWABgAAAa2wJ9wSDQYiMgk0qhsDo23G9OZhEqPVCQE0mpts1quFwIWbkMhFAr9zZ7T61CbuK1D0KtVLpdn2/9veXt9cn9GaEJ5UUKDK0JoRochiSuLP42PIVMFBR4eUWqgKFEXF5xEnJ6iqzelp0iceCtqhK9JsSF5tCtotkOcpTMzaGpowq4FqAXBw3DGM8h0ZD9opQoKpYg/c9vT1RfX2ZPdZnchyK+cnBMTfm/oyT/qBex+87639/pU+kEAIfkEBQgAPwAsAAAAABYAGAAABrXAn3BITCSIyCTSqGwOjbkc05mESo9UJIUik22zWq6XAhZuSSQWC/3NntNrUpu4rVPQr5cwz7b733l7L312RmhReVFEiTloRoYkiC+KQ4yOWAcHICA1NWpRap0bG5lEmZudnzmhNaOlSJl4L2p8JK9JsSR5tIO2B7gHo51oamiipL9DmcI1xHHHtz9bUWijDw+jhzlz0hTUJNbYG9ptb66ZyegHFhaEd+DIr+rsferRwPb2VPlBACH5BAUIAD8ALAAAAAAWABgAAAaywJ9wSGQwiMgk0qhsDo0wGNOZhEqPVCQGg8Nts1quFwMWbk8nGg39zZ7T61ObuK1j0LWaMM+2+995ezV9dkZoXYFIeV1oRoYniHqKNYwnUwsLIiJdOTlCnV0fH5hEmJqcnj+gOKKkSJhonbI5aK5JsCeznbULtwuiNjaxtCfBrb1DmMDCucTGo8hmYmiiFRWih2N00yfV1x/ZbW/HrpiYGRmEd93Q5ebofebmVPL18072QQAh+QQFCAA/ACwAAAAAFgAYAAAGkcCfcEh0OIjIJNKobA6NLhfTmYRKj1SkRpPLbbNarlcDFm6jt1v0mz270mtyeOtOC+Euun6Pvt3VeXtWaXZIhIBGg4RJh1FTRiMjh39pkVNCkJKLP4eWWEUOfY1XTYqjl08OkXisN56gq4Ctr0NbeJFbkX1sZhq3I7kju3Juno+JbnpRxliJDskazqhV0tVU1UEAIfkEBQgAPwAsBAACAA4ADgAABjHAn3B4uw2PyCJyyWw6ibdcTsksSqlHa04oXWq5W2RXHAYvxy6X+YdOq9nh9rnsHB+DACH5BAUIAD8ALAIACAASAA4AAAY+wJ9wSBTebsVk8Ug85nLK4fPohEZ/U6TUSnxGvUXw1yq+gsvJrJobzlWraXbzVkYP4b+jy3X97ak3e31/N0EAIfkEBQgAPwAsAgAIABIADgAABj/An3BIFLpcxWTxSDzebsrh8+iERn9TpNRKfEa9RfDXKr6Cy8msmhu+VatpdtNVRg/hv+NodP1pNFQue31/R0EAIfkEBQgAPwAsBAACAA4ADgAABjHAn3Docg2PyCJyyWw6ia7bTcksSqlH600oXWq5W2RXHAYvx6OR+YdOq9nh9rnsHB+DACH5BAUIAD8ALAAAAAAWABgAAAaywJ9wSGQwiMgk0qhsDo0wGNOZhEqPVCQGg8Nts1quFwMWbk8nGg39zZ7T61ObuK1j0LWaMM+2+995ezV9dkZoXYFIeV1oRoYniHqKNYwnUwsLIiJdOTlCnV0fH5hEmJqcnj+gOKKkSJhonbI5aK5JsCeznbULtwuiNjaxtCfBrb1DmMDCucTGo8hmYmiiFRWih2N00yfV1x/ZbW/HrpiYGRmEd93Q5ebofebmVPL18072QQAh+QQFCAA/ACwAAAAAFgAYAAAGtMCfcEhMJIjIJNKobA6NuRzTmYRKj1QkhSKTbbNarpcCFm5JJBYL/c2e02tSm7itU9CvlzDPtvvfeXsvfXZGaFGBSHlRaEaGJIh6ii+MJFMHByAgNTVqQmqcGxuYRJianJ4/oDWipEiYeC9qfCSuSbAkebODtQe3B6KcaGpooaO+Q5jBNcNxxrY/W5WiDw+ihzlz0RTTG9XXkNlk22itmMjnBxYWhHck5q7p633p0L/19VT4QQAh+QQFCAA/ACwAAAAAFgAYAAAGtcCfcEg0GIjIJNKobA6NtxvTmYRKj1QkBNJqbbNarhcCFm5DIRQK/c2e0+tQm7itQ9CrlTDPtvvfeXsrfXZGaFF5UUSJN2hGhiGIK4pDjI5YBQUeHlFqnShRFxeZRJmbn6g3oqRImXgranwhrEmuIXmxg7MFtQWiMzNoamjAq7xDmb/BcMQzxnQQUWiiCgqihzdzP1vSIdTWF9htb8asmZkTE4R33qPnQucF6X3xtEr1+MdN+EEAIfkEBQgAPwAsAAAAABYAGAAABrrAn3BIJBCIyCTSqGwOjTYb05mESo9UZKOhUm2zWq63ARZuO51SCf3NntPrTpu4rTfQqdTtlmfb/295e31yf0ZoQnkxMUKDKUJoRocdiSmLjXyPP5FYAQEcHDAwaotqohISnkSeoKKkMaYwqKpInngpaoS0SbYdebkpaLtDnqh7aGpop6kBqwHGN8hxy8NtaBERAwPYiD9z3mSbHdja3JTgZncds57NP+0B5nZo7LTw8g3ww7z6/VT9QQAAIfkEBQgAPwAsAAAAABYAGAAABq/An3BIFAiIyCTSqGwOjbcb05mESo9UJAJhMm2zWq4XARZuNZrRCP3NntNrTZu4rSPQXZery7b733l7Jn12RmhCgUJ6XUJoRoYaiCZ6ioKNGlMAAGh6ap0jeg4OmkSanC6eqKAuoqRIphpdanwarkmwsiO0tkOaonpoaqetAKUAvy7BcaGjxUNtaMSihz9z1WQ/0c3TkddmdxrErpq+DoTg4s7kx+ZyCOu8t/DzVPNBADs=","Iron or Lead Ore":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIVBMVEUAAADq5uLSwL61pJW9n4uMZVBpaWlXPDxDQ0NOPjouJyC5eZwCAAAAAXRSTlMAQObYZgAAAENJREFUeNpNxkERADEIA8BYwAIWsHAWYgELWMBCLUTlzfTRyb4WAKQBPGLFeLQfM8dzohkWHTaz5NmuGrzcreCBJFh+mC8n+y/EgqUAAAAASUVORK5CYII="};
+const ico = (n,cls="ico") => ICONS[n] ? `<img class="${cls}" src="${ICONS[n]}" alt="">` : "";
+
+const ING = {
+  "Bottled Water":["Basics","Use a Glass Bottle at a water source, or a Sink"],
+  "Daybloom":["Herb","Forest surface, blooms in daytime"],
+  "Blinkroot":["Herb","Underground & Cavern layers"],
+  "Moonglow":["Herb","Jungle surface, blooms at night"],
+  "Deathweed":["Herb","Corruption / Crimson, blooms on Blood Moon or full moon"],
+  "Waterleaf":["Herb","Desert sand, blooms while raining"],
+  "Fireblossom":["Herb","Underworld ash, blooms late afternoon when not raining"],
+  "Shiverthorn":["Herb","Snow biome"],
+  "Damselfish":["Fish","Fishing in a Sky lake"],
+  "Armored Cavefish":["Fish","Fishing in Underground / Cavern water"],
+  "Crimson Tigerfish":["Fish","Fishing in the Crimson"],
+  "Hemopiranha":["Fish","Fishing in the Crimson"],
+  "Ebonkoi":["Fish","Fishing in the Corruption"],
+  "Frost Minnow":["Fish","Fishing in the Snow biome"],
+  "Flarefin Koi":["Fish","Fishing in lava"],
+  "Obsidifish":["Fish","Fishing in lava"],
+  "Prismite":["Fish","Fishing in the Hallow"],
+  "Double Cod":["Fish","Fishing in surface Jungle water"],
+  "Variegated Lardfish":["Fish","Fishing in underground Jungle water"],
+  "Cobweb":["Material","Underground caves, break the webs"],
+  "Feather":["Material","Harpies (sky / floating islands)"],
+  "Coral":["Material","Ocean floor / beach"],
+  "Iron or Lead Ore":["Material","Mining, surface & underground"],
+  "Rotten Chunk or Vertebra":["Material","Corruption enemies drop Rotten Chunks, Crimson enemies drop Vertebrae"],
+  "Mushroom":["Material","Forest grass surface"],
+  "Glowing Mushroom":["Material","Glowing Mushroom biome"],
+  "Cactus":["Material","Desert"],
+  "Bone":["Material","Dungeon enemies, skeletons"],
+  "Shark Fin":["Material","Sharks in the Ocean"],
+  "Lens":["Material","Demon Eyes at night"],
+  "Fallen Star":["Material","Falls from the sky at night"],
+  "Obsidian":["Material","Where water meets lava"],
+  "Hellstone":["Material","Underworld"],
+  "Ichor":["Material","Ichor Stickers in the Crimson"],
+  "Cursed Flame":["Material","Clingers, Cursed Hammers & World Feeders in the Corruption"]
+};
+
+const B = ["Bottled Water",1];
+const shown = rec => rec.filter(r=>r[0]!=="Bottled Water");
+const POTIONS = [
+  // name, effect, recipe, class, type, tier
+  ["Lifeforce","+20% max life",[B,["Prismite",1],["Moonglow",1],["Shiverthorn",1],["Waterleaf",1]],"all","combat","S"],
+  ["Endurance","Take 10% less damage",[B,["Armored Cavefish",1],["Blinkroot",1]],"all","combat","S"],
+  ["Regeneration","+2 HP/s life regen",[B,["Daybloom",1],["Mushroom",1]],"all","combat","S"],
+  ["Ironskin","+8 defense",[B,["Daybloom",1],["Iron or Lead Ore",1]],"all","combat","S"],
+  ["Wrath","+10% damage",[B,["Ebonkoi",1],["Deathweed",1]],"all","combat","A"],
+  ["Rage","+10% crit chance",[B,["Hemopiranha",1],["Deathweed",1]],"all","combat","A"],
+  ["Archery","+10% bow damage, +20% arrow speed",[B,["Daybloom",1],["Lens",1]],"ranged","combat","A"],
+  ["Magic Power","+20% magic damage",[B,["Moonglow",1],["Deathweed",1],["Fallen Star",1]],"magic","combat","A"],
+  ["Summoning","+1 max minion",[B,["Variegated Lardfish",1],["Moonglow",1]],"summon","combat","A"],
+  ["Mana Regeneration","Faster mana regen",[B,["Moonglow",1],["Daybloom",1],["Fallen Star",1]],"magic","combat","A"],
+  ["Heartreach","Bigger life-heart pickup range",[B,["Crimson Tigerfish",1],["Daybloom",1]],"all","combat","A"],
+  ["Battle","Doubles enemy spawn rate",[B,["Deathweed",1],["Rotten Chunk or Vertebra",1]],"all","utility","A"],
+  ["Inferno","Ring of fire that burns nearby enemies",[B,["Flarefin Koi",1],["Obsidifish",2],["Fireblossom",1]],"all","combat","B"],
+  ["Thorns","Attackers take damage too",[B,["Deathweed",1],["Cactus",1]],"all","combat","B"],
+  ["Ammo Reservation","20% chance to save ammo",[B,["Double Cod",1],["Moonglow",1]],"ranged","combat","B"],
+  ["Warmth","Take 30% less damage from cold enemies",[B,["Frost Minnow",1],["Shiverthorn",1]],"all","combat","B"],
+  ["Calming","Fewer enemy spawns",[B,["Damselfish",1],["Daybloom",1]],"all","utility","C"],
+  ["Titan","More knockback",[B,["Bone",1],["Deathweed",1],["Shiverthorn",1]],"all","combat","C"],
+  ["Dangersense","Highlights nearby traps & hazards",[B,["Shiverthorn",1],["Cobweb",10]],"all","utility",""],
+  ["Featherfall","Slow fall, hold Up/Down to control",[B,["Daybloom",1],["Blinkroot",1],["Feather",1]],"all","utility",""],
+  ["Gills","Breathe underwater",[B,["Waterleaf",1],["Coral",1]],"all","utility",""],
+  ["Gravitation","Flip gravity with Up",[B,["Fireblossom",1],["Deathweed",1],["Blinkroot",1],["Feather",1]],"all","utility",""],
+  ["Night Owl","Better night vision",[B,["Daybloom",1],["Blinkroot",1]],"all","utility",""],
+  ["Obsidian Skin","Lava immunity",[B,["Fireblossom",1],["Waterleaf",1],["Obsidian",1]],"all","utility",""],
+  ["Shine","Emit light",[B,["Daybloom",1],["Glowing Mushroom",1]],"all","utility",""],
+  ["Swiftness","+25% move speed",[B,["Blinkroot",1],["Cactus",1]],"all","utility",""],
+  ["Water Walking","Walk on water (Down to sink)",[B,["Waterleaf",1],["Shark Fin",1]],"all","utility",""],
+];
+const FLASKS = [
+  ["Flask of Fire","Hits inflict On Fire!",[B,["Hellstone",3]],["melee","summon"],"combat","C"],
+  ["Flask of Ichor","Hits inflict Ichor: −15 enemy defense",[B,["Ichor",2]],["melee","summon"],"combat","B"],
+  ["Flask of Cursed Flames","Hits inflict Cursed Inferno: 24 damage/s",[B,["Cursed Flame",2]],["melee","summon"],"combat","C"],
+];
+const CLS = {all:["All classes","var(--gold)"],melee:["Melee","var(--melee)"],ranged:["Ranged","var(--ranged)"],magic:["Magic","var(--magic)"],summon:["Summoner","var(--summon)"]};
+
+const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const wiki = (n, label) => `<a class="wl" href="https://terraria.wiki.gg/wiki/${encodeURIComponent(n.replace(/ /g,"_"))}" target="_blank" rel="noopener">${esc(label||n)}</a>`;
+const CLOCK = `<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 3v3.2l2 1.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+const DUR = {"Lifeforce Potion":8,"Endurance Potion":4,"Regeneration Potion":8,"Ironskin Potion":8,"Wrath Potion":4,"Rage Potion":4,"Archery Potion":8,"Magic Power Potion":4,"Summoning Potion":8,"Mana Regeneration Potion":8,"Heartreach Potion":8,"Battle Potion":7,"Inferno Potion":4,"Thorns Potion":8,"Ammo Reservation Potion":8,"Warmth Potion":15,"Calming Potion":12,"Titan Potion":8,"Dangersense Potion":10,"Featherfall Potion":10,"Gills Potion":4,"Gravitation Potion":3,"Night Owl Potion":10,"Obsidian Skin Potion":6,"Shine Potion":10,"Swiftness Potion":8,"Water Walking Potion":10,"Ale":2,"Flask of Fire":20,"Flask of Ichor":20,"Flask of Cursed Flames":20,"Golden Delight":48,"Seafood Dinner":14,"Pho":10,"Pad Thai":8};
+const fmtDur = m => m + "m";
+const TYPE = {combat:["Combat","var(--combat)"],utility:["Utility","var(--utility)"]};
+function card([name,eff,rec,cls,type],suffix){
+  const full = suffix ? name : name+" Potion";
+  const list = [].concat(cls);
+  const isFlask = FLASKS.some(f=>f[0]===name);
+  return `<article class="slot${isFlask?" flask":""}" data-cls="${list.join(" ")}" data-ings="${esc(shown(rec).map(r=>r[0]).join("|"))}">${DUR[full]?`<span class="dur corner">${CLOCK}${fmtDur(DUR[full])}</span>`:""}
+    <div class="slot-top"><div class="titlerow"><span class="ibox">${ico(full)}</span><h3>${wiki(full)}</h3></div><span class="pills">${isFlask?`<span class="pill" style="color:var(--flask)">Flask</span>`:""}${type&&!isFlask?`<span class="pill type" style="color:${TYPE[type][1]}">${TYPE[type][0]}</span>`:""}${list.filter(c=>c!=="all").map(c=>`<span class="pill" style="color:${CLS[c][1]}">${CLS[c][0]}</span>`).join("")}</span></div>
+    <p class="effect">${esc(eff)}</p>${isFlask?`<p class="station">Melee &amp; whips. One flask at a time.</p>`:""}
+    <div class="recipe">${shown(rec).map(([i,q])=>`<button type="button" class="ing" data-ing="${esc(i)}" ${ING[i]?` data-tip="${esc(ING[i][1])}"`:""}>${ico(i)}${q>1?`<b>${q}×</b> `:""}${esc(i)}</button>`).join("")}</div>
+  </article>`;
+}
+const ALE = ["Ale","Tipsy: +10% melee damage & speed, +2% melee crit, −4 defense. Brew at a Keg or buy from the Tavernkeep.",[["Mug",1]],"melee","combat"];
+const TIERS = [
+  ["S","S-Tier","Must-have for every fight. Big stat boosts that help any class."],
+  ["A","A-Tier","High value. Always use these when they match your class or goal."],
+  ["B","B-Tier","Situational. Good support in specific fights."],
+  ["C","C-Tier","Niche. Rarely worth the effort."],
+  ["U","Utility","Exploration and movement. Not needed for boss fights."],
+];
+let tierClosed = {};
+try{ tierClosed = JSON.parse(localStorage.getItem("tbp-tiers")||"{}") || {}; }catch(e){ tierClosed = {}; }
+const CHEV = `<svg class="chev" viewBox="0 0 12 8" aria-hidden="true"><path d="M0 0h12L6 8z"/></svg>`;
+document.getElementById("tierWrap").innerHTML = TIERS.map(([k,name,desc])=>{
+  const items = k==="U" ? POTIONS.filter(p=>p[5]===""&&p[4]==="utility").map(p=>[p,false])
+              : [...POTIONS.filter(p=>p[5]===k).map(p=>[p,false]), ...(k==="B"?[[ALE,true]]:[]), ...FLASKS.filter(f=>f[5]===k).map(f=>[f,true])];
+  const clsUnion = [...new Set(items.flatMap(([p])=>[].concat(p[3])))];
+  return `<div class="tier${tierClosed[k]?" collapsed cdone":""}" data-tier="${k}" data-cls="${clsUnion.join(" ")}"><div class="tierhead" role="button" tabindex="0" aria-expanded="${!tierClosed[k]}"><span class="tbadge t-${k}">${k==="U"?"U":k}</span><div><h3>${name} ${CHEV}</h3><p>${desc}</p></div></div><div class="tbody"><div class="tinner"><div class="grid fill">${items.map(([p,suf])=>card(p,suf)).join("")}</div></div></div></div>`;
+}).join("");
+
+const FURN = [
+  ["Campfire","Cozy Fire: +0.5 HP/s life regen while nearby.","all","#ff8a3d"],
+  ["Heart Lantern","Heart Lamp: +1 HP/s life regen while nearby.","all","var(--life)"],
+  ["Bast Statue","+5 defense while nearby.","all","#d9b24a"],
+  ["Slice of Cake","Sugar Rush (+20% move & mining speed). Click again to refresh.","all","#f7a8d0"],
+  ["Sunflower","Happy!: +10% move speed and fewer enemy spawns nearby.","all","#ffd23f"],
+  ["Peace Candle","Fewer enemy spawns nearby.","all","#f2efe2"],
+  ["Dryad","Extra healing when she's housed near the arena.","all","var(--leaf)"],
+  ["Sharpening Station","Melee weapons get +12 armor penetration.","melee","#b9c0d9"],
+  ["Ammo Box","20% chance to not consume ammo.","ranged","var(--ranged)"],
+  ["Crystal Ball","Clairvoyance: +20 max mana, more magic damage & crit, less mana use.","magic","var(--magic)"],
+  ["Star in a Bottle","Mana regen while nearby.","magic","var(--mana)"],
+  ["Bewitching Table","+1 minion slot.","summon","var(--summon)"],
+  ["War Table","+1 sentry slot.","summon","var(--summon)"],
+];
+const FDUR = {"Campfire":"Nearby","Heart Lantern":"Nearby","Bast Statue":"Nearby","Slice of Cake":"2m","Sunflower":"Nearby","Peace Candle":"Nearby","Sharpening Station":"Until death","Ammo Box":"Until death","Crystal Ball":"Until death","Star in a Bottle":"Nearby","Bewitching Table":"Until death","War Table":"Until death"};
+const FGET = {
+  "Campfire":"Craft by hand: 10 Wood + 5 Torches",
+  "Heart Lantern":"Craft by hand: 1 Life Crystal + 4 Chain",
+  "Bast Statue":"Sandstone Chests deep in the Underground Desert, or Oasis and Mirage Crates",
+  "Slice of Cake":"The Party Girl sells the Cake during a party",
+  "Sunflower":"Grows on grass, or buy from the Dryad for 50 silver",
+  "Peace Candle":"Work Bench: 2 Gold or Platinum Bars + 1 Pink Torch",
+  "Dryad":"Moves in after you beat the Eye of Cthulhu, Eater of Worlds, Brain of Cthulhu or Skeletron",
+  "Sharpening Station":"Underground Jungle cabins, or the Merchant in Hardmode for 10 gold",
+  "Ammo Box":"The Arms Dealer in Hardmode for 10 gold",
+  "Crystal Ball":"The Wizard in Hardmode for 10 gold",
+  "Star in a Bottle":"Craft by hand: 1 Bottle + 1 Fallen Star",
+  "Bewitching Table":"Found in the Dungeon, or the Witch Doctor in Hardmode for 10 gold (Wizard must live there)",
+  "War Table":"Dropped by Dark Mages and Ogres in the Old One's Army event",
+};
+const FTYPE = {"Slice of Cake":"utility","Sunflower":"utility","Peace Candle":"utility"};
+document.getElementById("furnList").innerHTML = FURN.map(([n,d,c])=>{
+  const type = FTYPE[n] || "combat", dur = FDUR[n] || "Nearby";
+  const label = dur==="Until death" ? "∞" : dur, tip = dur==="Until death" ? "Lasts until you die" : dur==="Nearby" ? "Lasts while you're nearby" : "";
+  return `<article class="slot" data-cls="${c}"><span class="dur corner"${tip?` title="${tip}"`:""}>${CLOCK}${label}</span>
+    <div class="slot-top"><div class="titlerow"><span class="ibox">${ico(n)}</span><h3>${wiki(n)}</h3></div><span class="pills"><span class="pill type" style="color:${TYPE[type][1]}">${TYPE[type][0]}</span>${c!=="all"?`<span class="pill" style="color:${CLS[c][1]}">${CLS[c][0]}</span>`:""}</span></div>
+    <p class="effect">${esc(d.replace(/\.$/,""))}</p>
+    ${FGET[n]?`<p class="station get"><b>Where to get:</b> ${esc(FGET[n])}</p>`:""}
+  </article>`;
+}).join("");
+
+const order = ["Basics","Herb","Fish","Material"];
+let cls = "all", active = null;
+const ALLITEMS = ["S","A","B","C",""].flatMap(t=>[...POTIONS.filter(p=>p[5]===t), ...FLASKS.filter(f=>f[5]===t)]);
+const itemName = p => FLASKS.includes(p) ? p[0] : p[0]+" Potion";
+let qty = {};
+try{ qty = JSON.parse(localStorage.getItem("tbp-qty")||"{}") || {}; }catch(e){ qty = {}; }
+const getQ = n => (n in qty) ? qty[n] : 1;
+const saveQ = () => { try{ localStorage.setItem("tbp-qty", JSON.stringify(qty)); }catch(e){} };
+const fits = cs => cls==="all" || cs.includes("all") || cs.includes(cls);
+const visible = p => fits([].concat(p[3]));
+const STEP = `<span class="qbtns"><button type="button" data-step="1" aria-label="Increase" tabindex="-1"><svg viewBox="0 0 10 6"><path d="M5 0l5 6H0z"/></svg></button><button type="button" data-step="-1" aria-label="Decrease" tabindex="-1"><svg viewBox="0 0 10 6"><path d="M0 0h10L5 6z"/></svg></button></span>`;
+document.getElementById("qgrid").innerHTML = ALLITEMS.map(p=>{
+  const n = itemName(p), id = "q-"+n.replace(/\W+/g,"-").toLowerCase();
+  const t = p[5] || "U";
+  return `<div class="qrow q-${t}" data-cls="${[].concat(p[3]).join(" ")}" data-tip="${esc(p[1])}"><label for="${id}"><span class="qtier t-${t}" title="${t==="F"?"Flask":t==="U"?"Utility":t+"-Tier"}">${t}</span>${ico(n)}${esc(n)}</label><span class="qwrap"><input class="qin" id="${id}" data-q="${esc(n)}" type="number" min="0" max="999" inputmode="numeric" value="${getQ(n)}">${STEP}</span></div>`;
+}).join("");
+
+const EASE = "cubic-bezier(.2,.8,.2,1)";
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+let animToken = 0, pendingFinish = null;
+function layoutQ(){
+  const g = document.getElementById("qgrid"); if(!g) return;
+  const n = [...g.children].filter(r=>!r.hidden).length;
+  const w = g.parentElement.clientWidth;
+  const cols = Math.max(1, Math.min(4, Math.floor((w + 14) / (220 + 14))));
+  g.style.setProperty("--qcols", cols);
+  g.style.setProperty("--qrows", Math.max(1, Math.ceil(n / cols)));
+}
+addEventListener("resize", layoutQ);
+function runVis(list, onSwap){
+  if(pendingFinish) pendingFinish();
+  const hide = list.filter(([el,sh])=>!sh && !el.hidden).map(x=>x[0]);
+  const show = list.filter(([el,sh])=>sh && el.hidden).map(x=>x[0]);
+  if(!hide.length && !show.length){ onSwap && onSwap(); return; }
+  if(reduceMotion()){ hide.forEach(e=>e.hidden=true); show.forEach(e=>e.hidden=false); onSwap && onSwap(); return; }
+  const token = ++animToken;
+  hide.forEach(e=>{ e._h = token; e.style.transition = "opacity .28s ease, transform .28s ease"; e.style.opacity = "0"; e.style.transform = "scale(.97)"; });
+  const movers = () => [...document.querySelectorAll(".grid > .slot, .qrow")].filter(e=>!e.hidden && !hide.includes(e));
+  let timer;
+  const finish = () => {
+    clearTimeout(timer);
+    if(token !== animToken || pendingFinish !== finishRef) return;
+    pendingFinish = null;
+    const rel = e => { const r = e.getBoundingClientRect(), pr = e.parentElement.getBoundingClientRect(); return [r.left-pr.left, r.top-pr.top]; };
+    const before = new Map(movers().map(e=>[e, rel(e)]));
+    hide.forEach(e=>{ e._h = 0; e.hidden = true; e.style.transition = e.style.opacity = e.style.transform = ""; });
+    show.forEach(e=>{ e.hidden = false; e.style.transition = "none"; e.style.opacity = "0"; e.style.transform = "translateY(10px) scale(.98)"; });
+    onSwap && onSwap();
+    const moved = [];
+    before.forEach((r,e)=>{ const n = rel(e), dx = r[0]-n[0], dy = r[1]-n[1]; if(Math.abs(dx)>.5 || Math.abs(dy)>.5){ e.style.transition = "none"; e.style.transform = `translate(${dx}px,${dy}px)`; moved.push(e); } });
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const live = e => !(e._h > token);
+      moved.filter(live).forEach(e=>{ e.style.transition = `transform .45s ${EASE}`; e.style.transform = ""; });
+      show.filter(live).forEach(e=>{ e.style.transition = `opacity .4s ease, transform .45s ${EASE}`; e.style.opacity = ""; e.style.transform = ""; });
+      setTimeout(()=>[...moved, ...show].forEach(e=>{ if(!e.style.transform && !e.style.opacity) e.style.transition = ""; }), 500);
+    }));
+  };
+  const finishRef = finish;
+  pendingFinish = finish;
+  timer = setTimeout(finish, hide.length ? 280 : 0);
+}
+
+let shownRows = new Set();
+function renderTotals(){
+  const tot = {}; let count = 0;
+  ALLITEMS.filter(visible).forEach(p=>{ const k = getQ(itemName(p)); count += k; if(k>0) shown(p[2]).forEach(([i,q])=>tot[i]=(tot[i]||0)+q*k); });
+  const rows = Object.keys(tot).sort((a,b)=>order.indexOf(ING[a][0])-order.indexOf(ING[b][0]) || tot[b]-tot[a] || a.localeCompare(b));
+  const body = document.getElementById("ingBody");
+  body.innerHTML = rows.map(i=>`<tr class="row${i===active?" on":""}${shownRows.has(i)?"":" rowin"}" data-ing="${esc(i)}" tabindex="0"><td><div class="cellname"><span class="ibox sm">${ico(i)}</span><div><strong>${esc(i)}</strong><div class="cat">${ING[i][0]}</div></div></div></td><td>${esc(ING[i][1])}</td><td class="n">${tot[i]}</td></tr>`).join("");
+  if(!rows.length) body.innerHTML = `<tr class="rowin"><td colspan="3" style="color:var(--muted)">Set a quantity above to see what you need.</td></tr>`;
+  shownRows = new Set(rows);
+  document.getElementById("ingNote").textContent = `Enter how many of each you want to brew${cls==="all"?"":" for "+CLS[cls][0]}. You're making ${count} potion${count===1?"":"s"}. An Alchemy Table saves about a third of the ingredients, so treat these as the most you'll need.`;
+}
+
+function apply(){
+  const vis = [...document.querySelectorAll("[data-cls]:not(.cbtn)")].map(el=>[el, fits(el.dataset.cls.split(" "))]);
+  document.querySelectorAll(".slot[data-ings]").forEach(s=>{
+    const has = active && s.dataset.ings.split("|").includes(active);
+    s.classList.toggle("dim", !!active && !has);
+    s.classList.toggle("hit", !!has);
+  });
+  document.querySelectorAll(".ing[data-ing]").forEach(b=>b.classList.toggle("on", b.dataset.ing===active));
+  if(active) document.getElementById("filterName").textContent = active;
+  vis.push([document.getElementById("filterbar"), !!active]);
+  runVis(vis, layoutQ);
+  document.querySelectorAll(".cbtn").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.cls===cls)));
+  renderTotals();
+  renderPlan();
+}
+function setClass(c){
+  cls = c;
+  try{ localStorage.setItem("tbp-class", c); }catch(e){}
+  // drop ingredient filter if no potion for this class uses it
+  if(active && !ALLITEMS.filter(visible).some(p=>shown(p[2]).some(r=>r[0]===active))) active = null;
+  apply();
+}
+
+document.addEventListener("click",e=>{
+  const cb = e.target.closest(".cbtn");
+  if(cb){ setClass(cb.dataset.cls); return; }
+  const st = e.target.closest("[data-step]");
+  if(st){
+    const inp = st.closest(".qwrap").querySelector("input");
+    inp.value = Math.max(0, Math.min(999, (parseInt(inp.value,10)||0) + Number(st.dataset.step)));
+    inp.dispatchEvent(new Event("input",{bubbles:true}));
+    return;
+  }
+  const b = e.target.closest("[data-ing]");
+  if(b){ active = active===b.dataset.ing ? null : b.dataset.ing; apply(); if(b.tagName==="TR"){ const ps = document.querySelector('.panel[data-sec="pots"]'); if(ps.classList.contains("collapsed")) setCollapsed(ps,false); ps.scrollIntoView({behavior:"smooth"}); } }
+});
+document.addEventListener("keydown",e=>{
+  const r = e.target.closest && e.target.closest("tr.row");
+  if(r && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); r.click(); }
+});
+const clampQ = raw => { const v = parseInt(raw,10); return v>=0 ? Math.min(v,999) : 0; };
+document.getElementById("qgrid").addEventListener("input",e=>{
+  const t = e.target.closest("[data-q]"); if(!t) return;
+  const v = clampQ(t.value);
+  if(t.value !== "" && String(v) !== t.value) t.value = v;
+  qty[t.dataset.q] = v; saveQ(); renderTotals();
+});
+document.addEventListener("change",e=>{
+  const t = e.target.closest(".qin"); if(t && String(clampQ(t.value)) !== t.value) t.value = clampQ(t.value);
+});
+document.addEventListener("mouseover",e=>{
+  const t = e.target.closest && e.target.closest("[data-tip]"); if(!t) return;
+  t.classList.toggle("tip-right", t.getBoundingClientRect().left > window.innerWidth*0.55);
+});
+function setAll(v){
+  ALLITEMS.filter(visible).forEach(p=>{ const n = itemName(p); qty[n]=v; const inp = document.querySelector(`.qin[data-q="${CSS.escape(n)}"]`); if(inp) inp.value = v; });
+  saveQ(); renderTotals();
+}
+document.getElementById("applyAll").addEventListener("click",()=>{ const el=document.getElementById("setAll"); const v=clampQ(el.value); el.value=v; setAll(v); });
+document.getElementById("zeroAll").addEventListener("click",()=>setAll(0));
+document.getElementById("clearFilter").addEventListener("click",e=>{e.stopPropagation(); active=null; apply();});
+
+// ---------- Buff planner ----------
+const STATDEF = [
+  ["def","Defense","n"],["dr","Damage reduction","%"],["maxLife","Max life","%"],["regen","Life regen","hps"],
+  ["dmg","Damage","%"],["crit","Crit chance","%"],
+  ["meleeDmg","Melee damage","%"],["meleeSpeed","Melee speed","%"],["meleeCrit","Melee crit","%"],["armorPen","Melee armor penetration","n"],
+  ["bowDmg","Bow damage","%"],["arrowSpeed","Arrow speed","%"],["ammoSave","Ammo save chance","%"],
+  ["magicDmg","Magic damage","%"],["magicCrit","Magic crit","%"],["maxMana","Max mana","n"],["manaCost","Mana cost","%"],
+  ["minions","Max minions","n"],["sentries","Max sentries","n"],
+  ["move","Move speed","%"],["mining","Mining speed","%"],
+];
+const WF3 = {def:4,dmg:10,crit:4,meleeSpeed:10,move:40,mining:15}, WF2 = {def:3,dmg:7.5,crit:3,meleeSpeed:7.5,move:30,mining:10};
+const PLAN_FX = {
+  "Lifeforce Potion":[{maxLife:20}],"Endurance Potion":[{dr:10}],"Regeneration Potion":[{regen:2}],"Ironskin Potion":[{def:8}],
+  "Wrath Potion":[{dmg:10}],"Rage Potion":[{crit:10}],"Archery Potion":[{bowDmg:10,arrowSpeed:20}],"Magic Power Potion":[{magicDmg:20}],
+  "Summoning Potion":[{minions:1}],"Mana Regeneration Potion":[{},"Faster mana regen"],"Heartreach Potion":[{},"Bigger heart pickup range"],
+  "Battle Potion":[{},"Double enemy spawns"],"Inferno Potion":[{},"Ring of fire burns nearby enemies"],"Thorns Potion":[{},"Attackers take damage"],
+  "Ammo Reservation Potion":[{ammoSave:20}],"Warmth Potion":[{},"30% less damage from cold enemies"],"Calming Potion":[{},"Fewer enemy spawns"],
+  "Titan Potion":[{},"More knockback"],"Dangersense Potion":[{},"See traps & hazards"],"Featherfall Potion":[{},"Slow falling"],
+  "Gills Potion":[{},"Breathe underwater"],"Gravitation Potion":[{},"Flip gravity"],"Night Owl Potion":[{},"Night vision"],
+  "Obsidian Skin Potion":[{},"Lava immunity"],"Shine Potion":[{},"Emit light"],"Swiftness Potion":[{move:25}],"Water Walking Potion":[{},"Walk on water"],
+  "Ale":[{meleeDmg:10,meleeSpeed:10,meleeCrit:2,def:-4}],
+  "Flask of Fire":[{},"Melee & whip hits set enemies On Fire!"],"Flask of Ichor":[{},"Melee & whip hits apply Ichor (−15 enemy defense)"],"Flask of Cursed Flames":[{},"Melee & whip hits apply Cursed Inferno"],
+  "Golden Delight":[WF3,"Exquisitely Stuffed"],"Seafood Dinner":[WF2,"Plenty Satisfied"],"Pho":[WF2,"Plenty Satisfied"],"Pad Thai":[WF2,"Plenty Satisfied"],
+  "Campfire":[{regen:0.5},"1.1× base life regen (with Heart Lantern)"],"Heart Lantern":[{regen:1}],"Bast Statue":[{def:5}],
+  "Slice of Cake":[{move:20,mining:20}],"Sunflower":[{move:10},"Fewer enemy spawns"],"Peace Candle":[{},"Fewer enemy spawns"],"Dryad":[{},"Extra healing from the Dryad"],
+  "Sharpening Station":[{armorPen:12}],"Ammo Box":[{ammoSave:20}],"Crystal Ball":[{maxMana:20,magicDmg:5,magicCrit:2,manaCost:-2}],
+  "Star in a Bottle":[{},"Faster mana regen"],"Bewitching Table":[{minions:1}],"War Table":[{sentries:1}],
+};
+const PLAN = [];
+TIERS.filter(t=>t[0]!=="U").forEach(([k,name])=>{
+  POTIONS.filter(p=>p[5]===k).forEach(p=>PLAN.push({n:p[0]+" Potion",g:name,tier:k,cls:[].concat(p[3]),timed:true}));
+  if(k==="B") PLAN.push({n:"Ale",g:name,tier:k,cls:["melee"],timed:true});
+});
+FLASKS.forEach(f=>PLAN.push({n:f[0],g:"Flasks",tier:"F",cls:f[3],timed:true,ex:"flask"}));
+["Golden Delight","Seafood Dinner","Pho","Pad Thai"].forEach(n=>PLAN.push({n,g:"Food",tier:"food",cls:["all"],timed:true,ex:"food"}));
+FURN.forEach(([n,,c])=>PLAN.push({n,g:"Arena",tier:"arena",cls:[c],timed:false}));
+POTIONS.filter(p=>p[5]===""&&p[4]==="utility").forEach(p=>PLAN.push({n:p[0]+" Potion",g:"Utility",tier:"U",cls:["all"],timed:true}));
+const GROUPS = [...new Set(PLAN.map(x=>x.g))];
+let picked = new Set();
+try{ picked = new Set(JSON.parse(localStorage.getItem("tbp-plan")||"[]")); }catch(e){}
+const shortName = n => n.replace(/ Potion$/,"");
+document.getElementById("picker").innerHTML = `<div class="ptools"><button type="button" data-plan="core">Boss basics</button><button type="button" data-plan="clear">Clear</button></div>` +
+  GROUPS.map(g=>{
+    const items = PLAN.filter(x=>x.g===g), first = items[0];
+    const badge = /^[SABC]-Tier$/.test(g) ? `<span class="tbadge t-${g[0]}">${g[0]}</span>` : g==="Utility" ? `<span class="tbadge t-U">U</span>` : "";
+    const union = [...new Set(items.flatMap(x=>x.cls))].join(" ");
+    return `<div class="pgroup" data-cls="${union}"><h4>${badge}${g}</h4><div class="pchips">${items.map(x=>`<button type="button" class="pchip" data-pick="${esc(x.n)}" data-cls="${x.cls.join(" ")}" aria-pressed="${picked.has(x.n)}">${ico(x.n==="Pho"?"Pho":x.n)}${esc(shortName(x.n))}${DUR[x.n]?`<small>${DUR[x.n]}m</small>`:""}</button>`).join("")}</div></div>`;
+  }).join("");
+const fmtNum = v => (Math.round(v*10)/10).toString();
+function renderPlan(){
+  const sel = PLAN.filter(x=>picked.has(x.n) && fits(x.cls));
+  const box = document.getElementById("summary");
+  document.querySelectorAll(".pchip").forEach(b=>b.setAttribute("aria-pressed", String(picked.has(b.dataset.pick))));
+  if(!sel.length){ box.innerHTML = `<p class="sum-h">Your loadout</p><p class="sum-empty">Nothing picked yet. Tap potions, food, flasks and arena items on the left, or start with Boss basics.</p>`; return; }
+  const tot = {}, other = [];
+  sel.forEach(x=>{ const [st, txt] = PLAN_FX[x.n] || [{}]; Object.entries(st).forEach(([k,v])=>tot[k]=(tot[k]||0)+v); if(txt && !other.includes(txt)) other.push(txt); });
+  const timed = sel.filter(x=>x.timed && DUR[x.n]).sort((a,b)=>DUR[a.n]-DUR[b.n]);
+  const min = timed.length ? DUR[timed[0].n] : null, max = timed.length ? DUR[timed[timed.length-1].n] : 1;
+  const shortest = timed.filter(x=>DUR[x.n]===min).map(x=>shortName(x.n));
+  const stats = STATDEF.filter(([k])=>tot[k]).map(([k,label,u])=>{ const v = tot[k]; const sign = v>0?"+":"−"; const a = fmtNum(Math.abs(v)); const val = u==="%" ? `${sign}${a}%` : u==="hps" ? `${sign}${a} HP/s` : `${sign}${a}`; const bad = (k==="manaCost") ? v>0 : v<0; return `<li><span>${label}</span><b class="${bad?"neg":""}">${val}</b></li>`; }).join("");
+  box.innerHTML = `<p class="sum-h">Your loadout · ${sel.length} picked</p>
+    <div class="sum-time">${min!==null?`<b>${min}m</b><span>until ${shortest.join(", ")} ${shortest.length>1?"run":"runs"} out</span>`:`<b>No limit</b><span>arena buffs last while you stay nearby</span>`}</div>
+    ${stats?`<div><p class="sum-h">Stat totals</p><ul class="stats">${stats}</ul></div>`:""}
+    ${other.length?`<div><p class="sum-h">Other effects</p><ul class="others">${other.map(o=>`<li>${esc(o)}</li>`).join("")}</ul></div>`:""}
+    ${timed.length>1?`<div><p class="sum-h">Run times</p><div class="timeline">${timed.map(x=>`<div class="tl${DUR[x.n]===min?" min":""}"><span>${esc(shortName(x.n))}</span><i><em style="width:${Math.max(4,DUR[x.n]/max*100)}%"></em></i><b>${DUR[x.n]}m</b></div>`).join("")}</div></div>`:""}
+    ${tot.ammoSave>20?`<p class="pnote">Ammo save chances don't simply add up in game, so the real number is a bit lower.</p>`:""}`;
+}
+const savePlan = () => { try{ localStorage.setItem("tbp-plan", JSON.stringify([...picked])); }catch(e){} };
+document.getElementById("picker").addEventListener("click",e=>{
+  const b = e.target.closest("[data-pick]");
+  if(b){
+    const n = b.dataset.pick, it = PLAN.find(x=>x.n===n);
+    if(picked.has(n)) picked.delete(n);
+    else { if(it.ex) PLAN.filter(x=>x.ex===it.ex).forEach(x=>picked.delete(x.n)); picked.add(n); }
+    savePlan(); renderPlan(); return;
+  }
+  const t = e.target.closest("[data-plan]");
+  if(t){
+    if(t.dataset.plan==="clear") picked.clear();
+    else picked = new Set(["Lifeforce Potion","Endurance Potion","Regeneration Potion","Ironskin Potion","Wrath Potion","Rage Potion","Heartreach Potion","Golden Delight","Campfire","Heart Lantern","Bast Statue","Sunflower"]);
+    savePlan(); renderPlan();
+  }
+});
+function setTier(t, c){
+  if(t.classList.contains("collapsed")===c) return;
+  const h = t.querySelector(".tierhead");
+  t.classList.add("animating"); clearTimeout(t._a); t._a = setTimeout(()=>t.classList.remove("animating"), 480);
+  clearTimeout(t._d);
+  if(c) t._d = setTimeout(()=>{ if(t.classList.contains("collapsed")) t.classList.add("cdone"); }, 460); else t.classList.remove("cdone");
+  t.classList.toggle("collapsed", c); h.setAttribute("aria-expanded", String(!c));
+  t.querySelector(".tbody").inert = c;
+  tierClosed[t.dataset.tier] = c; try{ localStorage.setItem("tbp-tiers", JSON.stringify(tierClosed)); }catch(e){}
+  syncTierAll();
+}
+function syncTierAll(){
+  const b = document.getElementById("tierAll"), anyOpen = [...document.querySelectorAll(".tier")].some(t=>!t.classList.contains("collapsed"));
+  b.dataset.mode = anyOpen ? "collapse" : "expand";
+  b.innerHTML = `${CHEV}${anyOpen ? "Collapse all tiers" : "Expand all tiers"}`;
+}
+document.getElementById("tierWrap").addEventListener("click",e=>{
+  const h = e.target.closest(".tierhead"); if(!h) return;
+  const t = h.closest(".tier"); setTier(t, !t.classList.contains("collapsed"));
+});
+document.getElementById("tierAll").addEventListener("click",e=>{
+  const c = e.currentTarget.dataset.mode==="collapse";
+  document.querySelectorAll(".tier").forEach(t=>setTier(t, c));
+  syncTierAll();
+});
+syncTierAll();
+document.querySelectorAll(".tier.collapsed .tbody").forEach(b=>b.inert = true);
+document.getElementById("tierWrap").addEventListener("keydown",e=>{
+  const h = e.target.closest && e.target.closest(".tierhead");
+  if(h && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); h.click(); }
+});
+const SECS = {pots:["Potions & Flasks","Lifeforce Potion"],food:["Food","Golden Delight"],furn:["Arena","Campfire"],ings:["Shopping List","The Plan"],plan:["Buff Calculator","Crystal Ball"]};
+let collapsed = {};
+try{ collapsed = JSON.parse(localStorage.getItem("tbp-collapsed")||"{}") || {}; }catch(e){ collapsed = {}; }
+document.querySelectorAll(".panel[data-sec]").forEach(sec=>{
+  const key = sec.dataset.sec, head = sec.querySelector(".panel-head"), h2 = head.querySelector("h2");
+  const body = document.createElement("div"); body.className = "pbody"; body.id = "body-"+key;
+  const inner = document.createElement("div"); inner.className = "pinner"; body.appendChild(inner);
+  while(head.nextSibling) inner.appendChild(head.nextSibling);
+  sec.appendChild(body);
+  h2.innerHTML = `<button type="button" class="ptoggle" aria-controls="body-${key}" aria-expanded="true">${ico(SECS[key][1])}<span>${h2.textContent}</span>${CHEV}</button>`;
+  if(collapsed[key]) setCollapsed(sec, true, false);
+});
+function setCollapsed(sec, c, animate=true){
+  const key = sec.dataset.sec;
+  if(animate){ sec.classList.add("animating"); clearTimeout(sec._a); sec._a = setTimeout(()=>sec.classList.remove("animating"), 480); }
+  clearTimeout(sec._d);
+  if(c){ if(animate) sec._d = setTimeout(()=>{ if(sec.classList.contains("collapsed")) sec.classList.add("cdone"); }, 460); else sec.classList.add("cdone"); }
+  else sec.classList.remove("cdone");
+  sec.classList.toggle("collapsed", c);
+  sec.querySelector(".pbody").inert = c;
+  sec.querySelector(".ptoggle").setAttribute("aria-expanded", String(!c));
+  collapsed[key] = c; try{ localStorage.setItem("tbp-collapsed", JSON.stringify(collapsed)); }catch(e){}
+}
+document.getElementById("jumpbar").innerHTML = `<button type="button" class="jbtn home" data-top="1" title="Back to top" aria-label="Back to top"><svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M7 1h2v1h1v1h1v1h1v1h1v1h1v1h1v2h-2v6h-4v-4h-2v4h-4v-6h-2v-2h1v-1h1v-1h1v-1h1v-1h1v-1h1z"/></svg></button><span class="jsep" aria-hidden="true"></span>` + Object.entries(SECS).map(([k,[n,i]])=>`<button type="button" class="jbtn" data-jump="${k}" title="${n}">${ico(i)}<span>${n}</span></button>`).join("");
+document.addEventListener("click",e=>{
+  const t = e.target.closest(".ptoggle");
+  if(t){ const sec = t.closest(".panel"); setCollapsed(sec, !sec.classList.contains("collapsed")); return; }
+  if(e.target.closest("[data-top]")){ scrollTo({top:0,behavior:reduceMotion()?"auto":"smooth"}); return; }
+  const j = e.target.closest("[data-jump]");
+  if(j){ const sec = document.querySelector(`.panel[data-sec="${j.dataset.jump}"]`); if(sec.classList.contains("collapsed")) setCollapsed(sec, false); sec.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); }
+});
+const setBarH = () => document.documentElement.style.setProperty("--barh", (document.getElementById("topbar").offsetHeight + 30) + "px");
+setBarH(); addEventListener("resize", setBarH);
+document.querySelectorAll("img[data-icon]").forEach(im=>{ if(ICONS[im.dataset.icon]) im.src = ICONS[im.dataset.icon]; else im.remove(); });
+let start = "all";
+const h = location.hash.slice(1);
+if(CLS[h]) start = h; else { try{ const s = localStorage.getItem("tbp-class"); if(CLS[s]) start = s; }catch(e){} }
+cls = start;
+// first paint: set visibility without animating
+document.querySelectorAll("[data-cls]:not(.cbtn)").forEach(el=>{ el.hidden = !fits(el.dataset.cls.split(" ")); });
+apply();
+</script>
+</body></html>
