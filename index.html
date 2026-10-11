@@ -1921,6 +1921,15 @@ html,body{min-height:100vh}body{background-repeat:no-repeat!important}
   .site a[data-page]:not(.site-home) img{margin:0!important;height:22px;width:auto}
   .site .site-home{flex:0 0 auto}
 }
+.gt-l.gt-sub{padding-left:22px;position:relative}.gt-l.gt-sub::before{content:"";position:absolute;left:10px;top:.65em;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+/* Effects as one aligned table: text | bracket | item names (all item names line up) */
+#pg-setups ul.cs-sfx{display:grid;grid-template-columns:fit-content(68%) 12px minmax(min-content,1fr);column-gap:10px;row-gap:10px;align-items:center;padding:0;margin:0;list-style:none}
+#pg-setups ul.cs-sfx > li.sfx-g{display:contents}
+#pg-setups .cs-sfx .sfx-br{margin:2px 0}
+#pg-setups .cs-sfx .sfx-sub{position:relative;padding-left:20px}
+#pg-setups .cs-sfx .sfx-sub::before{content:"";position:absolute;left:7px;top:.62em;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6}
+#pg-setups .cs-sfx .sfx-ls{gap:5px}
+@media (max-width:640px){#pg-setups ul.cs-sfx{grid-template-columns:fit-content(56%) 10px minmax(min-content,1fr);column-gap:8px}}
 .pill.hm{color:#ff8fb1;border-color:#ff8fb166;background:#ff8fb11a;cursor:help}
 
 /* ===== stage picker: boss icons, name on hover ===== */
@@ -7594,7 +7603,7 @@ function gTipFor(n){
   const p = GPIECE[n], a = GACCM[n]; const L = [];
   // one line per stat and per effect
   const stats = s => gLong(s).split(", ").filter(Boolean).forEach(x=>L.push("• "+x));
-  const fxl = f => String(f).split(/:\s(?=[+-]?\d)/).length>1 && /,/.test(f) ? (()=>{ const [h, rest] = [f.slice(0, f.indexOf(":")), f.slice(f.indexOf(":")+1)]; L.push(h+":"); rest.split(/,\s*/).forEach(x=>L.push("  – "+x.trim())); })() : L.push("✦ "+f);
+  const fxl = f => String(f).split(/:\s(?=[+-]?\d)/).length>1 && /,/.test(f) ? (()=>{ const [h, rest] = [f.slice(0, f.indexOf(":")), f.slice(f.indexOf(":")+1)]; L.push("✦ "+h+":"); rest.split(/,\s*/).forEach(x=>L.push("◦ "+x.trim())); })() : L.push("✦ "+f);
   if(p){ L.push(`• ${p.def} defense`); stats(p.s); if(p.note) L.push(p.note);
     const set = GSETS.find(x=>x[1].includes(n)||x[2].includes(n)||(x[3]&&x[3].includes(n))); if(set) L.push(`Part of the ${set[0].replace(/ armor.*$/i,"")} set`); }
   if(a){ stats(a.s); a.fx.slice(0,4).forEach(fxl);
@@ -7862,9 +7871,13 @@ function gSideFx(r){
   const solo = [], shared = [];
   ph.forEach(p=>{ if(p.srcs.length===1) own.get(p.srcs[0]).push(p.t);
     else { const txt = p.m ? `${p.sum<0?"−":"+"}${+Math.abs(p.sum).toFixed(2)}${p.m[3]} ${p.m[4]}` : p.t; shared.push([txt, p.srcs, !!p.m]); } });
-  const srcTag = srcs => `<small class="sfx-src">(${srcs.map(n=>gRare(n, gWikiA(n))).join(", ")})</small>`;
+  const srcTag = srcs => `<small class="sfx-src">${srcs.map(n=>gRare(n, gWikiA(n))).join(", ")}</small>`;
   // one line per effect: "A, B, C" / "A · B" lists are split (not inside brackets, not "Label: a, b" lists); several lines from one source share a bracket
-  const parts = t => { t = String(t); if(/:/.test(t)) return [t]; const out = []; let d = 0, cur = "";
+  const parts = t => { t = String(t);
+    // "Label: a, b, c" (3+ short pieces) becomes a heading line with sub-points
+    const lm = t.match(/^([^:]{2,40}):\s+(.+)$/); if(lm){ const sub = lm[2].split(/,\s+(?![^(]*\))/).map(x=>x.trim()).filter(Boolean);
+      if(sub.length >= 3 && sub.every(x=>x.split(/\s+/).length <= 6)) return ["\u0001"+lm[1]+":", ...sub.map(x=>"\u0002"+x)]; return [t]; }
+    if(/:/.test(t)) return [t]; const out = []; let d = 0, cur = "";
     for(let i = 0; i < t.length; i++){ const c = t[i]; if(c === "(") d++; if(c === ")") d--;
       if(d === 0 && (t.startsWith(", ", i) || t.startsWith(" · ", i))){ out.push(cur); cur = ""; i += t.startsWith(", ", i) ? 1 : 2; continue; }
       cur += c; }
@@ -7872,8 +7885,8 @@ function gSideFx(r){
     // only real lists get split: every piece short, none carrying on the sentence ("then ...", "so ...")
     const listy = t.includes(" · ") || (ps.length > 1 && ps.every(x=>x.replace(/\([^)]*\)/g,"").trim().split(/\s+/).length <= 5) && !ps.slice(1).some(x=>/^(then|so|and|but|which|while|or)\b/i.test(x)));
     return listy ? ps.map(x=>x[0].toUpperCase()+x.slice(1)) : [t]; };
-  const block = (ls, tag, cls="") => ls.length === 1 ? `<li class="${cls}"><span class="sfx-t">${esc(ls[0])}</span> ${tag}</li>`
-    : `<li class="sfx-g ${cls}"><span class="sfx-ls">${ls.map(x=>`<span class="sfx-t">${esc(x)}</span>`).join("")}</span><span class="sfx-br" aria-hidden="true"></span><span class="sfx-gs">${tag}</span></li>`;
+  const line1 = x => x[0]==="\u0002" ? `<span class="sfx-t sfx-sub">${esc(x.slice(1))}</span>` : x[0]==="\u0001" ? `<span class="sfx-t sfx-hd">${esc(x.slice(1))}</span>` : `<span class="sfx-t">${esc(x)}</span>`;
+  const block = (ls, tag, cls="") => `<li class="sfx-g ${cls}"><span class="sfx-ls">${ls.map(line1).join("")}</span><span class="sfx-br" aria-hidden="true"></span><span class="sfx-gs">${tag}</span></li>`;
   const li = [...own].filter(([src,es])=>es.length).map(([src,es])=>block(es.flatMap(parts), srcTag([src])));
   const grp = new Map(); shared.forEach(([t,srcs,st])=>{ const k = srcs.join("|")+"|"+st; if(!grp.has(k)) grp.set(k,{srcs,st,ts:[]}); grp.get(k).ts.push(t); });
   const sh = [...grp.values()].map(g=>block(g.ts.flatMap(parts), srcTag(g.srcs)+(g.st?` <small class="sfx-src">stacked</small>`:g.srcs.length>1?` <small class="sfx-src">counts once</small>`:""), "sfx-sh"));
@@ -8498,6 +8511,7 @@ document.getElementById("csbar")?.addEventListener("click", e=>{ const j = e.tar
     let m = t.match(/^Craft from (.+?) (at an? |by hand)(.*?)((?:\s*\((?:other recipes exist|for the full set)\))*)$/);
     if(m){ const parts = m[1].split(/ \+ /), st = m[2]==="by hand" ? "By hand" : m[3], notes = (m[4].match(/\(([^)]+)\)/g)||[]).map(x=>x.slice(1,-1));
       return `<div class="gt-rec"><div class="gt-rh">Recipe${st?` <small>${esc(st)}</small>`:""}</div><div class="gt-ri">${parts.map(item).join('<i class="gt-plus">+</i>')}</div>${notes.length?`<div class="gt-rn">${esc(notes.map(x=>x[0].toUpperCase()+x.slice(1)).join(" · "))}</div>`:""}</div>`; }
+    if(/^◦ /.test(t)) return `<div class="gt-l gt-sub">${txt(t.slice(2))}</div>`;
     const rm = t.match(/^(Rare|Rare drop|Hard to get): (.*)$/);
     if(rm) return `<div class="gt-l gt-rare"><span class="gt-x">!</span><b>${esc(rm[1])}:</b> ${txt(rm[2])}</div>`;
     return `<div class="gt-l">${txt(t)}</div>`; };
