@@ -1929,7 +1929,7 @@ body.prep-on{
 
 <script>(function(){ var h = location.hash, pg = h==="#setups" ? "setups" : h==="#walkthrough" ? "walk" : (h && h!=="#") ? "prep" : "home";
   document.documentElement.setAttribute("data-boot", pg); if(document.body) document.body.classList.add(pg==="prep" ? "prep-on" : pg==="setups" ? "setups-on" : pg==="home" ? "home-on" : "walk-on"); })();</script>
-<style>html:not(.tbp-ready) .wrap{visibility:hidden;animation:tbp-show 0s 4s forwards}@keyframes tbp-show{to{visibility:visible}}</style>
+<style>html:not(.tbp-ready) *,html:not(.tbp-ready) *::before,html:not(.tbp-ready) *::after{transition:none!important}html:not(.tbp-ready) .wrap{visibility:hidden;animation:tbp-show 0s 4s forwards}@keyframes tbp-show{to{visibility:visible}}</style>
 <div class="wrap">
   <nav class="site" aria-label="Pages">
     <a href="#" data-page="home" class="site-home" title="All Terraria Tools" aria-label="All Terraria Tools"><svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M7 1h2v1h1v1h1v1h1v1h1v1h1v1h1v2h-2v6h-4v-4h-2v4h-4v-6h-2v-2h1v-1h1v-1h1v-1h1v-1h1v-1h1z"/></svg></a>
@@ -8802,7 +8802,7 @@ document.getElementById("csbar").addEventListener("click",e=>{ const j = e.targe
     a.innerHTML = srcs.map(x=>`<img src="${x}" alt="">`).join(""); });
   H.addEventListener("click", e=>{ const c = e.target.closest("[data-tool]"); if(!c) return; e.preventDefault(); showPage(c.dataset.tool); });
 })();
-requestAnimationFrame(()=>document.documentElement.classList.add('tbp-ready'));
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.add('tbp-ready')));
 </script>
 
 </body></html>
