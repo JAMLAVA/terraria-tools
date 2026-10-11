@@ -1902,6 +1902,25 @@ body.home-on .site{display:none}
 @media (max-width:900px){.tp-grid{grid-template-columns:minmax(0,1fr)}.tp-card{flex-direction:row}.tp-art{flex:0 0 34%;height:auto;min-height:150px;border-bottom:0;border-right:1px solid color-mix(in srgb,var(--tc) 40%,transparent);flex-wrap:wrap;align-content:center;padding:12px}}
 @media (max-width:560px){.tp-card{flex-direction:column}.tp-art{flex:none;min-height:0;height:110px;border-right:0;border-bottom:1px solid color-mix(in srgb,var(--tc) 40%,transparent);flex-wrap:nowrap}.tp-art img{height:44px}.tp-walk .tp-art img{height:32px}.tp-hero{padding:26px 0 18px}}
 html,body{min-height:100vh}body{background-repeat:no-repeat!important}
+#csbar.classbar:has(.sdd.open){z-index:60!important}
+/* Phones: home button sits left of the stage dropdown; classes / difficulty / Max Accessories centered below */
+@media (max-width:640px){
+  #csbar.csb-v2{position:sticky}
+  #csbar.csb-v2 .csb-l{position:absolute;left:12px;top:var(--home-top,25px);z-index:2;margin:0}
+  #csbar.csb-v2 .sdd-cs{margin-left:36px}
+  #csbar.csb-v2 .csb-bot{display:flex!important;flex-direction:column;align-items:center;grid-template-columns:none}
+  #csbar.csb-v2 .csb-c{width:100%;align-items:center!important;justify-self:center}
+  #csbar.csb-v2 .csb-d{align-items:center!important;width:auto;align-self:center}
+  #csbar.csb-v2 .csb-d .slotnote{text-align:center;align-self:center}
+  #csbar.csb-v2 .sclass{justify-content:center}
+}
+/* Phones: page switcher icons sit above their names, everything centered on one line */
+@media (max-width:640px){
+  .site{display:flex;justify-content:center;align-items:stretch;gap:4px}
+  .site a[data-page]:not(.site-home){flex:1 1 0;min-width:0;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px!important;text-align:center;white-space:nowrap;font-size:15px;line-height:1.1}
+  .site a[data-page]:not(.site-home) img{margin:0!important;height:22px;width:auto}
+  .site .site-home{flex:0 0 auto}
+}
 .pill.hm{color:#ff8fb1;border-color:#ff8fb166;background:#ff8fb11a;cursor:help}
 
 /* ===== stage picker: boss icons, name on hover ===== */
