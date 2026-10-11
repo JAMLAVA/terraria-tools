@@ -1877,6 +1877,30 @@ h1,h2,h3,h4,.cs-title,.cs-h,.sub-h,.tbadge{font-synthesis:weight}
 .wk-st[data-k] .wk-face img:not(:only-child){height:30px!important}
 .wk-st[data-k] .wk-face{width:auto!important;min-width:64px!important}
 .wk-steps > ol > li{font-size:16px;line-height:1.55}
+/* ===== Terraria Tools landing page ===== */
+body.home-on .site{display:none}
+.site .site-home{display:inline-flex;align-items:center;justify-content:center;padding:0 10px;color:var(--fg)}
+.site .site-home svg{width:16px;height:16px}
+#pg-home{padding-bottom:24px}
+.tp-hero{text-align:center;padding:40px 0 26px}
+.tp-hero h1{margin:0;font:600 clamp(40px,8vw,76px)/1.05 var(--f-head);color:var(--gold);text-shadow:0 0 18px #f7d26a55,0 4px 0 #0008;letter-spacing:.01em}
+.tp-hero p{margin:12px auto 0;max-width:46ch;color:var(--muted);font-size:17.5px;line-height:1.5}
+.tp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.tp-card{display:flex;flex-direction:column;min-width:0;border-radius:14px;border:2px solid var(--tc);background:linear-gradient(180deg,color-mix(in srgb,var(--tc) 22%,#0b0f1c),#0d1222 70%);color:var(--fg);text-decoration:none;overflow:hidden;box-shadow:0 0 0 2px #000,0 10px 26px #0007;transition:transform .15s ease,box-shadow .15s ease}
+.tp-card:hover,.tp-card:focus-visible{transform:translateY(-3px);box-shadow:0 0 0 2px #000,0 0 22px color-mix(in srgb,var(--tc) 55%,transparent),0 14px 30px #0008;outline:none}
+.tp-prep{--tc:#5fbf6a}.tp-setups{--tc:#9aa7bd}.tp-walk{--tc:#6f8cff}
+.tp-art{display:flex;align-items:center;justify-content:center;gap:14px;height:150px;padding:0 12px;background:radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--tc) 30%,transparent),transparent 70%);border-bottom:1px solid color-mix(in srgb,var(--tc) 40%,transparent)}
+.tp-art img{height:56px;width:auto;max-width:72px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 3px #0009)}
+.tp-walk .tp-art{gap:8px}
+.tp-walk .tp-art img{height:42px;max-width:56px}
+.tp-tx{display:flex;flex-direction:column;gap:8px;padding:16px 18px 18px;flex:1}
+.tp-tx h2{margin:0;font:600 31px/1.1 var(--f-head);color:var(--gold)}
+.tp-tx p{margin:0;color:var(--muted);line-height:1.55;font-size:16.5px}
+.tp-go{margin-top:auto;padding-top:6px;font:700 15.5px var(--f-body);color:var(--tc)}
+.tp-go i{font-style:normal;display:inline-block;transition:transform .15s}
+.tp-card:hover .tp-go i{transform:translateX(3px)}
+@media (max-width:900px){.tp-grid{grid-template-columns:minmax(0,1fr)}.tp-card{flex-direction:row}.tp-art{flex:0 0 34%;height:auto;min-height:150px;border-bottom:0;border-right:1px solid color-mix(in srgb,var(--tc) 40%,transparent);flex-wrap:wrap;align-content:center;padding:12px}}
+@media (max-width:560px){.tp-card{flex-direction:column}.tp-art{flex:none;min-height:0;height:110px;border-right:0;border-bottom:1px solid color-mix(in srgb,var(--tc) 40%,transparent);flex-wrap:nowrap}.tp-art img{height:44px}.tp-walk .tp-art img{height:32px}.tp-hero{padding:26px 0 18px}}
 .pill.hm{color:#ff8fb1;border-color:#ff8fb166;background:#ff8fb11a;cursor:help}
 
 /* ===== stage picker: boss icons, name on hover ===== */
@@ -1905,10 +1929,24 @@ body.prep-on{
 
 <div class="wrap">
   <nav class="site" aria-label="Pages">
+    <a href="#" data-page="home" class="site-home" title="All Terraria Tools" aria-label="All Terraria Tools"><svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M7 1h2v1h1v1h1v1h1v1h1v1h1v1h1v2h-2v6h-4v-4h-2v4h-4v-6h-2v-2h1v-1h1v-1h1v-1h1v-1h1v-1h1z"/></svg></a>
     <a href="#" data-page="prep" aria-current="page"><img data-sico="Lifeforce Potion" alt="">Boss Prep</a>
     <a href="#setups" data-page="setups"><img data-sico="Terra Blade" alt="">Class Setups</a>
     <a href="#walkthrough" data-page="walk"><img data-sico="Magic Mirror" alt="">Walkthrough</a>
   </nav>
+<div class="page" id="pg-home" hidden>
+  <header class="tp-hero"><h1>Terraria Tools</h1><p>Guides and planners for your next Terraria world. Pick a tool to get started.</p></header>
+  <div class="tp-grid"><a class="tp-card tp-prep" href="#bossprep" data-tool="prep">
+      <div class="tp-art" data-icons="Lifeforce Potion|Ironskin Potion|Regeneration Potion|Endurance Potion"></div>
+      <div class="tp-tx"><h2>Boss Prep</h2><p>Everything that keeps you alive in a boss fight: potions, flasks, food and arena buffs. Pick your class to see only what helps you, build a shopping list of ingredients and see how far your buffs raise your survival.</p><span class="tp-go">Open Boss Prep <i aria-hidden="true">→</i></span></div>
+    </a><a class="tp-card tp-setups" href="#setups" data-tool="setups">
+      <div class="tp-art" data-icons="Terra Blade|Megashark|Last Prism|Stardust Dragon Staff"></div>
+      <div class="tp-tx"><h2>Class Setups</h2><p>The best armor, accessories, weapons and reforges for Melee, Ranged, Magic and Summoner at every stage of the game, with full stats and how to get each item. Build and compare your own custom setup too.</p><span class="tp-go">Open Class Setups <i aria-hidden="true">→</i></span></div>
+    </a><a class="tp-card tp-walk" href="#walkthrough" data-tool="walk">
+      <div class="tp-art" data-icons=""></div>
+      <div class="tp-tx"><h2>Walkthrough</h2><p>A step-by-step checklist from your first night to the Moon Lord. Each stage covers what to do, which bosses to fight and how, the NPCs to look for and the gear to aim for, adjusted for your difficulty.</p><span class="tp-go">Open Walkthrough <i aria-hidden="true">→</i></span></div>
+    </a></div>
+</div>
 <div class="page" id="pg-prep">
   <header class="hero">
     <h1>Terraria Boss Prep</h1>
@@ -8550,20 +8588,21 @@ apply();
 // ---------- pages ----------
 document.querySelectorAll("img[data-sico]").forEach(im=>{ const n = im.dataset.sico; const src = ICONS[n] || (window.SICONS && SICONS[n]); if(src) im.src = src; else im.remove(); });
 function showPage(pg, push=true){
-  if(pg!=="setups" && pg!=="walk") pg = "prep";
+  if(pg!=="setups" && pg!=="walk" && pg!=="home") pg = "prep";
+  document.getElementById("pg-home").hidden = pg!=="home"; document.body.classList.toggle("home-on", pg==="home");
   document.getElementById("pg-walk").hidden = pg!=="walk";
   document.getElementById("pg-prep").hidden = pg!=="prep";
   document.getElementById("pg-setups").hidden = pg!=="setups";
   document.body.classList.toggle("prep-on", pg==="prep");
   document.querySelectorAll(".site [data-page]").forEach(a=>{ if(a.dataset.page===pg) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
-  document.title = pg==="setups" ? "Class Setups · Terraria Boss Prep" : pg==="walk" ? "Walkthrough · Terraria Boss Prep" : "Terraria Boss Prep";
-  if(push){ const h = pg==="setups" ? "#setups" : pg==="walk" ? "#walkthrough" : (cls && cls!=="all" ? "#"+cls : " "); try{ history.replaceState(null, "", h.trim() ? h : location.pathname + location.search); }catch(e){} }
+  document.title = pg==="home" ? "Terraria Tools" : pg==="setups" ? "Class Setups · Terraria Boss Prep" : pg==="walk" ? "Walkthrough · Terraria Boss Prep" : "Terraria Boss Prep";
+  if(push){ const h = pg==="home" ? " " : pg==="setups" ? "#setups" : pg==="walk" ? "#walkthrough" : (cls && cls!=="all" ? "#"+cls : "#bossprep"); try{ history.replaceState(null, "", h.trim() ? h : location.pathname + location.search); }catch(e){} }
   if(pg==="prep") setBarH();
   scrollTo({top:0});
 }
 document.querySelector(".site").addEventListener("click",e=>{ const a = e.target.closest("[data-page]"); if(!a) return; e.preventDefault(); showPage(a.dataset.page); });
-addEventListener("hashchange",()=>{ if(location.hash==="#setups") showPage("setups", false); else if(location.hash==="#walkthrough") showPage("walk", false); });
-showPage(location.hash==="#setups" ? "setups" : location.hash==="#walkthrough" ? "walk" : "prep", false);
+addEventListener("hashchange",()=>{ if(location.hash==="#setups") showPage("setups", false); else if(location.hash==="#walkthrough") showPage("walk", false); else if(!location.hash || location.hash==="#") showPage("home", false); else showPage("prep", false); });
+showPage(location.hash==="#setups" ? "setups" : location.hash==="#walkthrough" ? "walk" : (location.hash && location.hash!=="#") ? "prep" : "home", false);
 document.getElementById("csbar").addEventListener("click",e=>{ const j = e.target.closest("[data-csjump]"); if(!j) return;
   const t = document.getElementById(j.dataset.csjump); if(!t) return;
   const y = t.getBoundingClientRect().top + scrollY - document.getElementById("csbar").offsetHeight - 30;
@@ -8747,6 +8786,18 @@ document.getElementById("csbar").addEventListener("click",e=>{ const j = e.targe
   addEventListener("load", arm); arm();
   W.addEventListener("transitionend", e=>{ if(!mini && e.propertyName === "max-height") parts().forEach(x=>x.style.maxHeight = ""); });
   document.addEventListener("click", e=>{ if(e.target.closest('.site [data-page]')) { fold(false); } });
+})();
+</script>
+
+<script>
+// ---------- landing page ----------
+(function(){ const H = document.getElementById("pg-home"); if(!H) return;
+  const src = n => (typeof ICONS!=="undefined" && ICONS[n]) || (window.SICONS && SICONS[n]) || "";
+  H.querySelectorAll(".tp-art").forEach(a=>{
+    let srcs = (a.dataset.icons||"").split("|").filter(Boolean).map(src).filter(Boolean);
+    if(!srcs.length) srcs = ["gear","pre-eoc","pre-skel","pre-wof","pre-golem","end"].map(k=>{ const i = document.querySelector(`#pg-walk .wk-map a[data-wjump="wk-${k}"] .wk-mf img`); return i && i.getAttribute("src"); }).filter(Boolean);
+    a.innerHTML = srcs.map(x=>`<img src="${x}" alt="">`).join(""); });
+  H.addEventListener("click", e=>{ const c = e.target.closest("[data-tool]"); if(!c) return; e.preventDefault(); showPage(c.dataset.tool); });
 })();
 </script>
 
