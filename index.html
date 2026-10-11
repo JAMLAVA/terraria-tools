@@ -1835,8 +1835,8 @@ h1,h2,h3,h4,.cs-title,.cs-h,.sub-h,.tbadge{font-synthesis:weight}
 /* Biggest-hit box: equal space above its divider and below its text (down to the Stats line) */
 @media (min-width:641px){.cs-hero .cs-lcol > .cs-hitl{padding-top:6px}}
 /* Rankings / Copy / Compare buttons: inactive-tab brown */
-.cs-hero .cs-btns .cs-edit,.cs-hero .cs-btns .ghow summary{background:#544134;border-color:#ac7f5d;border-radius:8px}
-.cs-hero .cs-btns .cs-edit:hover,.cs-hero .cs-btns .ghow summary:hover{background:#5f4a3b}
+.cs-hero .cs-btns .cs-edit,.cs-hero .cs-btns .ghow summary{background:color-mix(in srgb,var(--gc) 10%,#101215);border-color:color-mix(in srgb,var(--gc) 35%,#2c333c);border-radius:8px}
+.cs-hero .cs-btns .cs-edit:hover,.cs-hero .cs-btns .ghow summary:hover{background:color-mix(in srgb,var(--gc) 18%,#101215)}
 /* Class buttons in the stage bar: bold */
 #csbar .sclass .scbtn{font-weight:700}
 /* Class description: a bit smaller, one line of space under the title */
@@ -1901,6 +1901,7 @@ body.home-on .site{display:none}
 .tp-card:hover .tp-go i{transform:translateX(3px)}
 @media (max-width:900px){.tp-grid{grid-template-columns:minmax(0,1fr)}.tp-card{flex-direction:row}.tp-art{flex:0 0 34%;height:auto;min-height:150px;border-bottom:0;border-right:1px solid color-mix(in srgb,var(--tc) 40%,transparent);flex-wrap:wrap;align-content:center;padding:12px}}
 @media (max-width:560px){.tp-card{flex-direction:column}.tp-art{flex:none;min-height:0;height:110px;border-right:0;border-bottom:1px solid color-mix(in srgb,var(--tc) 40%,transparent);flex-wrap:nowrap}.tp-art img{height:44px}.tp-walk .tp-art img{height:32px}.tp-hero{padding:26px 0 18px}}
+html,body{min-height:100vh}body{background-repeat:no-repeat!important}
 .pill.hm{color:#ff8fb1;border-color:#ff8fb166;background:#ff8fb11a;cursor:help}
 
 /* ===== stage picker: boss icons, name on hover ===== */
